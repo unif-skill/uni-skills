@@ -1,0 +1,19 @@
+{
+  "name": "uni-skills",
+  "interface": {
+    "displayName": "Uni Skills · 通用工程技能"
+  },
+  "plugins": [
+    {
+      "name": "uni-skills",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

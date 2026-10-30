@@ -1,0 +1,4 @@
+interface:
+  display_name: "代码组织规范"
+  short_description: "跨前端、React Native 与鸿蒙的目录、文件职责、命名和公共入口规范"
+  default_prompt: "使用 $code-organization 按当前语言和工程约定组织本次目录与文件变更。"
