@@ -13,13 +13,38 @@
 
 这些规范适用于不同企业和项目。具体技术选型、业务目录、CI、发布方式和能力契约从目标项目取得；文档规范适用于 RN、鸿蒙、脚本及其他技术工程。
 
-## 使用
+## 安装
 
-可以加载完整插件，也可以只提供所需的 `skills/<技能名>/` 目录。单独使用时保留该目录中的 `SKILL.md`、`references/` 和 `agents/`，通过所用工具的技能安装机制启用。
+使用 [Vercel Skills](https://github.com/vercel-labs/skills) 为所选的本地编程工具安装技能。需要 Node.js 22.20+；访问私有仓库时，先配置有权读取仓库的 Git 或 GitHub CLI 登录。
 
-每个技能的必要资料都在自身目录内，不需要复制仓库根目录或安装其他技能。技能之间的组合入口只在任务需要且对应技能可用时采用。描述用于自动识别任务，也可显式指定完整技能名称。
+```sh
+npx skills add unif-skill/uni-skills -g \
+  --agent codex claude-code cursor --skill '*'
+```
 
-插件定义见 [plugin.json](plugin.json)，市场入口见 [marketplace.json](.agents/plugins/marketplace.json)。仓库源码、插件分发及工具实际加载分别核对，不以文件存在代表已安装或已发布。
+`-g` 表示在本机跨项目使用；按需调整 `--agent` 后的工具名单。只安装某个技能时，将 `--skill '*'` 改成例如 `--skill documentation`。
+
+默认采用共享副本与软链接：
+
+| 工具 | 本机技能入口 |
+|---|---|
+| Codex、Cursor | 直接读取 `~/.agents/skills/<技能名>/` |
+| Claude Code | `~/.claude/skills/<技能名>/` 链接到共享副本 |
+
+同一工具选择一种安装方式。已有插件版时，先确认新入口可发现，再移除重复插件。上述入口用于本地工具；网页和云端会话按对应产品的安装机制配置。
+
+## 使用与更新
+
+按任务自动选择技能，也可显式指定技能名称。每个技能的必要资料都在自己的目录内，支持独立使用；组合入口只在任务需要且其他技能可用时采用。
+
+更新本集合的四个技能：
+
+```sh
+npx skills update -g code-organization react-native-development \
+  react-native-library documentation
+```
+
+更新会刷新安装的共享副本，各工具通过原入口读取。安装或更新后，在目标工具中确认技能可见；旧会话仍使用缓存时，重新打开会话。
 
 ## 维护
 
