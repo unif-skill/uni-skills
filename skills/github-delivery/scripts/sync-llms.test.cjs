@@ -81,6 +81,7 @@ try {
           ]
         : []),
       'website/scripts/build-llms-core.test.js',
+      'website/scripts/llms/.prettierrc.json',
       'website/scripts/llms/bundle.js',
       'website/scripts/llms/markdown.js',
       'website/scripts/llms/routes.js',
