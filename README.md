@@ -6,17 +6,35 @@
 
 | 技能 | 用途 |
 |---|---|
-| [code-organization](skills/code-organization/SKILL.md) | 前端、RN、鸿蒙等工程的目录归属、文件角色、命名与公共入口 |
-| [react-native-development](skills/react-native-development/SKILL.md) | RN 组件、Hook、样式、交互状态与原生平台接入 |
-| [react-native-library](skills/react-native-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
-| [harmonyos-development](skills/harmonyos-development/SKILL.md) | API 26／V2 下的 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
-| [harmonyos-library](skills/harmonyos-library/SKILL.md) | API 26 原生 HAR 库公共入口、依赖资源、打包发布与真实宿主示例 |
-| [github-delivery](skills/github-delivery/SKILL.md) | GitHub CI、仓库保护、工程模板同步、发布与恢复检查 |
-| [documentation](skills/documentation/SKILL.md) | 各类工程的文档编写、组织与审校，以及文档站生成、构建和验证 |
+| [uni-code-organization](skills/uni-code-organization/SKILL.md) | 前端、RN、鸿蒙等工程的目录归属、文件角色、命名与公共入口 |
+| [uni-rn-dev](skills/uni-rn-dev/SKILL.md) | RN 组件、Hook、样式、交互状态与原生平台接入 |
+| [uni-rn-library](skills/uni-rn-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
+| [uni-harmony-dev](skills/uni-harmony-dev/SKILL.md) | API 26／V2 下的 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
+| [uni-harmony-library](skills/uni-harmony-library/SKILL.md) | API 26 原生 HAR 库公共入口、依赖资源、打包发布与真实宿主示例 |
+| [uni-github-delivery](skills/uni-github-delivery/SKILL.md) | GitHub CI、仓库保护、工程模板同步、发布与恢复检查 |
+| [uni-documentation](skills/uni-documentation/SKILL.md) | 各类工程的文档编写、组织与审校，以及文档站生成、构建和验证 |
 
-技能按实际任务独立发现和使用，不要求相互安装或调用。GitHub 交付的共用机制在 github-delivery 维护；组织约定由所属组织提供，接入时落实到目标工程配置，通用工具不查找其他技能的安装目录。
+技能按实际任务独立发现和使用，不要求相互安装或调用。GitHub 交付的共用机制在 uni-github-delivery 维护；组织约定由所属组织提供，接入时落实到目标工程配置，通用工具不查找其他技能的安装目录。
 
 这些规范适用于不同企业和项目。具体技术选型、业务目录、CI、发布方式和能力契约从目标项目取得；文档规范适用于 RN、鸿蒙、脚本及其他技术工程。
+
+## 0.4.0 名称迁移
+
+全部技能以 `uni-` 开头；平台段使用 `rn` 和 `harmony`。
+
+| 原名称 | 当前名称 |
+|---|---|
+| `code-organization` | `uni-code-organization` |
+| `documentation` | `uni-documentation` |
+| `github-delivery` | `uni-github-delivery` |
+| `react-native-development` | `uni-rn-dev` |
+| `react-native-library` | `uni-rn-library` |
+| `harmonyos-development` | `uni-harmony-dev` |
+| `harmonyos-library` | `uni-harmony-library` |
+
+名称变化需要重新安装对应的新技能，不能只用旧名执行 update。先安装并核对新目录，再按同一安装范围移除旧入口；Codex 插件随新版本替换入口，共享副本单独迁移并保留既有启用策略。历史设计与计划保留当时名称，当前调用以上表为准。
+
+交付采用记录的 `standard` 改为 `uni-github-delivery/rn`。已有工程使用新技能的同步命令更新受管脚本和 `.github/delivery.json`，再运行仓内检查；不要只替换标准字符串或手写摘要。采用记录和工程配置按该工程的交付范围提交。
 
 ## 安装
 
@@ -29,7 +47,7 @@ npx skills add unif-skill/uni-skills -g \
   --agent codex claude-code cursor --skill '*'
 ```
 
-`-g` 表示在本机跨项目使用；按需调整 `--agent` 后的工具名单。只安装某个技能时，将 `--skill '*'` 改成例如 `--skill documentation`。
+`-g` 表示在本机跨项目使用；按需调整 `--agent` 后的工具名单。只安装某个技能时，将 `--skill '*'` 改成例如 `--skill uni-documentation`。
 
 默认采用共享副本与软链接：
 
@@ -47,9 +65,9 @@ npx skills add unif-skill/uni-skills -g \
 更新本集合的技能：
 
 ```sh
-npx skills update -g code-organization react-native-development \
-  react-native-library harmonyos-development harmonyos-library \
-  documentation github-delivery
+npx skills update -g uni-code-organization uni-rn-dev \
+  uni-rn-library uni-harmony-dev uni-harmony-library \
+  uni-documentation uni-github-delivery
 ```
 
 此命令更新已安装的共享副本；首次添加新技能时重新执行上方安装命令。Codex 插件按插件机制单独更新，不会自动改写共享目录。两种入口并存时分别更新并核对同一版本的内容，继续禁用 Codex 的重复共享入口。安装或更新后，在目标工具中确认技能可见；旧会话仍使用缓存时，重新打开会话。

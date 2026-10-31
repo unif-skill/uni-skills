@@ -1,0 +1,6 @@
+interface:
+  display_name: "Uni RN 库工程"
+  short_description: "React Native 库的创建、维护、打包发布、公开消费与运行示例规范"
+  default_prompt: "使用 $uni-rn-library 按本项目标准完成这项 React Native 库工程任务。"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"

@@ -6,4 +6,4 @@
 - 每个技能的必要引用放在自己的目录内，其他技能仅作可选组合；不建立隐式的根目录资料依赖。
 - 技能正文不绑定企业、应用、私有仓库或个人路径。具体工程标准从采用项目取得。
 - 原始评测输出和临时运行记录保存在仓库外；保留设计、计划与必要验收结论。
-- 创建或修改技能使用 skill-creator 和 writing-skills；技术文档使用本仓 documentation。
+- 创建或修改技能使用 skill-creator 和 writing-skills；技术文档使用本仓 uni-documentation。

@@ -19,4 +19,4 @@ jobs:
           curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" | tar -xz actionlint
           echo "$GITHUB_WORKSPACE" >> "$GITHUB_PATH"
       - name: Validate delivery implementation
-        run: bash skills/github-delivery/scripts/validate.sh
+        run: bash skills/uni-github-delivery/scripts/validate.sh

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 32 32" fill="none">
+  <title>Uni 文档规范</title>
+  <rect x=".5" y=".5" width="31" height="31" rx="8" fill="#FFF7ED" stroke="#E6C5A3"/><path d="M7 1h18" stroke="#9C3D10" stroke-width="2" stroke-linecap="round"/>
+  <g transform="translate(4 4)" fill="none" stroke="#9C3D10" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6.5-6Z"/><path d="M13.5 2v6H20M8 12h8M8 16h6"/></g>
+</svg>
