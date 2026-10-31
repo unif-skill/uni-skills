@@ -1,0 +1,4 @@
+interface:
+  display_name: "HarmonyOS 开发规范"
+  short_description: "原生 ArkTS／ArkUI 开发、状态、宿主生命周期与平台资源接入规范"
+  default_prompt: "使用 $harmonyos-development 按本项目采用的 SDK 与契约完成这项原生鸿蒙开发任务。"
