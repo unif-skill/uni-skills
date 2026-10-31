@@ -9,8 +9,8 @@
 | [code-organization](skills/code-organization/SKILL.md) | 前端、RN、鸿蒙等工程的目录归属、文件角色、命名与公共入口 |
 | [react-native-development](skills/react-native-development/SKILL.md) | RN 组件、Hook、样式、交互状态与原生平台接入 |
 | [react-native-library](skills/react-native-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
-| [harmonyos-development](skills/harmonyos-development/SKILL.md) | 原生 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
-| [harmonyos-library](skills/harmonyos-library/SKILL.md) | 原生 HAR 库公共入口、依赖资源、打包发布与真实宿主示例 |
+| [harmonyos-development](skills/harmonyos-development/SKILL.md) | API 26／V2 下的 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
+| [harmonyos-library](skills/harmonyos-library/SKILL.md) | API 26 原生 HAR 库公共入口、依赖资源、打包发布与真实宿主示例 |
 | [github-delivery](skills/github-delivery/SKILL.md) | GitHub CI、仓库保护、工程模板同步、发布与恢复检查 |
 | [documentation](skills/documentation/SKILL.md) | 各类工程的文档编写、组织与审校，以及文档站生成、构建和验证 |
 
