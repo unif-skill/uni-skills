@@ -35,6 +35,7 @@ const { customBuilder } = require('../templates/scripts/check-delivery.cjs');
 const hasOwnBuilder = customBuilder(builderSource);
 const files = [
   ['build-llms-core.test.js', 'website/scripts/build-llms-core.test.js'],
+  ['llms/.prettierrc.json', 'website/scripts/llms/.prettierrc.json'],
   ...['bundle', 'markdown', 'routes', 'index'].map((item) => [
     `llms/${item}.js`,
     `website/scripts/llms/${item}.js`,
