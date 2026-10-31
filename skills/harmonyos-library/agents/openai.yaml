@@ -1,0 +1,4 @@
+interface:
+  display_name: "HarmonyOS 库工程"
+  short_description: "按 API 26 维护 HAR 库的公共入口、依赖资源、打包发布与宿主消费"
+  default_prompt: "使用 $harmonyos-library 按 API 26 与本项目标准完成这项原生鸿蒙 HAR 库工程任务。"
