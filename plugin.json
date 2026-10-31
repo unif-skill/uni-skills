@@ -1,6 +1,15 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "uni-skills",
-  "version": "0.2.0",
-  "description": "独立维护和使用的通用工程技能：代码组织、React Native 开发、库工程、文档与 GitHub 交付。"
+  "version": "0.2.1",
+  "description": "独立维护和使用的通用工程技能：代码组织、React Native 开发、库工程、文档与 GitHub 交付。",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "composerIcon": "./assets/logo.png",
+        "logo": "./assets/logo.png",
+        "logoDark": "./assets/logo.png"
+      }
+    }
+  }
 }
