@@ -22,6 +22,19 @@
 
 系统材质、普通模糊与透明背景分别处理。按实际 SDK、组件所在位置、设备与系统设置核对支持条件；配置开启不等于效果生效。不支持的表面按项目已确认的视觉及可操作性处理，不通过移动入口、添加权限或更换框架制造效果。
 
+## API 26 系统材质
+
+采用沉浸光感时，先按实际组件核对入口和位置，再验证设备与系统条件。组件级 `systemMaterial`、弹窗选项、组件专属接口与应用级配置分别适用；配置存在不证明当前表面已支持。
+
+| 核对项 | 平台要求 |
+|---|---|
+| SDK 与应用配置 | target 至少为 26.0.0；`ohos.arkui.UIMaterial.state` 应用级元数据只在 entry 模块生效，HAR 不能替消费应用开启全局配置 |
+| 组件所在区域 | 指定弹窗／菜单等接口及 Slider、Toggle、Select 可在全页面生效；其他组件限官方列明的 Navigation／NavDestination 标题栏、横向 Tabs 底部 TabBar 等区域，不能将普通自定义卡片视为受支持载体 |
+| 运行条件 | 核对设备支持、材质等级与系统效果设置；按 SDK 实际提供的 uiMaterial 查询及组件接口确认运行状态 |
+| 验证方式 | 分别验证组件入口、宿主配置和真实运行效果；项目决定表面映射及不支持时的视觉表现 |
+
+版本依据：[沉浸光感与设备／系统设置](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/arkts-immersive-light-sense-overview)、[开启入口与支持范围](https://developer.huawei.com/consumer/cn/doc/HarmonyOS-Guides/arkts-immersive-light-sense-enable)。具体签名、载体和限制以 API 26 SDK 与对应官方资料核实。
+
 ## 验证
 
 按公开输入与事件验证状态变化，再在真实调用方核对接线。与本次变更相关时覆盖连续触发、目标切换、页面／Ability 重建、前后台、取消及迟到结果；不把替身模拟生命周期当成真实宿主运行证据。界面对照使用相同数据和环境，记录平台差异及未覆盖条件。
