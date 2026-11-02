@@ -6,7 +6,7 @@
 
 | 技能 | 用途 |
 |---|---|
-| [uni-code-organization](skills/uni-code-organization/SKILL.md) | 前端、RN、鸿蒙等工程的目录归属、文件角色、命名与公共入口 |
+| [uni-code-organization](skills/uni-code-organization/SKILL.md) | 前端、RN、鸿蒙、后端等工程的目录归属、源码与配置文件、环境变体、命名与公共入口 |
 | [uni-rn-dev](skills/uni-rn-dev/SKILL.md) | RN 组件、Hook、样式、交互状态与原生平台接入 |
 | [uni-rn-library](skills/uni-rn-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
 | [uni-harmony-dev](skills/uni-harmony-dev/SKILL.md) | API 26／V2 下的 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
@@ -75,5 +75,7 @@ npx skills update -g uni-code-organization uni-rn-dev \
 ## 维护
 
 修改所属技能及其引用资料，保持触发范围明确。通用规则不绑定某个企业、应用、固定包名或个人路径；项目已有有效约定与工具要求优先。
+
+配置结构校验器的回归使用 `python3 -m unittest discover -s tests -v`，只使用合成配置，不读取真实凭据。
 
 使用[评测任务](evals/cases.md)检查实际输出、独立使用和任务边界，再核对格式、相对引用及插件清单。行为运行记录放在仓库外；计划和设计保留在 `docs/`，不进入技能默认上下文。

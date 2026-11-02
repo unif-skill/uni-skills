@@ -1,6 +1,6 @@
 ---
 name: uni-code-organization
-description: 在前端、React Native、鸿蒙等工程中新增、拆分、移动或审查目录与源码文件，调整文件职责、命名和公共入口时使用。单纯文案修改或接口查询不触发。
+description: 在前端、React Native、鸿蒙、后端等工程中新增、拆分、移动或审查目录、源码和配置文件，调整环境变体、文件职责、命名和公共入口时使用。单纯文案修改或接口查询不触发。
 ---
 
 # 代码组织规范
@@ -13,6 +13,7 @@ description: 在前端、React Native、鸿蒙等工程中新增、拆分、移�
 |---|---|
 | 新增功能、确定目录或共享代码归属 | [目录与职责](references/structure.md) |
 | 拆分文件、类型、常量、样式、命名或导出 | [文件角色与命名](references/file-rules.md) |
+| 配置文件、环境变体、模板对齐与加载入口 | [配置归属与一致性](references/configuration.md) |
 | 涉及框架固定入口、生成文件或平台差异 | [平台与工具边界](references/platforms.md) |
 
 本目录包含完整组织规则，可独立使用。具体框架实现和业务契约从目标项目取得，不要求安装其他技能。
