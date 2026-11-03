@@ -2,9 +2,9 @@
   "formatVersion": 1,
   "source": "unif-skill/unif-portal-dev-skills",
   "files": {
-    "scripts/prepare_release.py": "af20f48205f8da524b912b3dbfcbd9ea685757d61404073b5edb2d675353a177",
+    "scripts/prepare_release.py": "aea804b610551a69df02c1821d37cf37f0989fac1b393246abe5b5b76c406843",
     "scripts/publish_release.py": "b7bc7a6c60e155078b3ff901382bc873f1b531eb2731ff41453f5542753ab4cd",
-    "tests/test_prepare_release.py": "1d9923cbf8b794e2d2307affdc99a4e937b7c07c852151d0e08915af6fb2fdca",
+    "tests/test_prepare_release.py": "38457190ec0e6dacb934b200b308bfceb762e9ccec86dfda83d4314d5d5ac76f",
     "tests/test_publish_release.py": "99d97ff478ad59ea8ba7c28efb5fb8fba14697d371cbb2cc53f44652165910b7"
   }
 }

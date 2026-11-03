@@ -84,9 +84,9 @@ npx skills update -g uni-code-organization uni-rn-dev \
 
 ### 自动发版与共享工具
 
-main 推送通过现有完整 CI 验证后，发布步骤核对候选版本并创建对应 GitHub Release。需要递增版本时，仅将新版本写回 `plugin.json`，重新验证后提交；仅发布 job 使用仓库自带 `GITHUB_TOKEN` 的内容写权限。PR、tag 和手动工作流只验证，不发布。发布提交带跳过 CI 标记，并由发布 job 排除，避免自触发。
+main 推送通过现有完整 CI 验证后，发布步骤核对候选版本并创建对应 GitHub Release。需要递增版本时，仅将新版本写回 `plugin.json`，重新验证后提交；仅发布 job 使用仓库自带 `GITHUB_TOKEN` 的内容写权限。PR、tag 和手动工作流只验证，不发布。版本写回使用 `GITHUB_TOKEN` 并带 `[skip ci]` 标记，避免自触发。
 
-minor 与 patch 均可使用。未显式指定新版本时默认递增 patch；清单明确指定同一 major 内尚未发布的新 minor／patch 时保留该版本。跨 major 变化会停止，须单独确认后再按获准流程处理。重复运行只恢复同一已知发布提交，不覆盖其他提交的标签，也不以再次发版掩盖验收失败。
+minor 与 patch 按提交类型选择：检查当前版本标签到本次已验证提交之间的标题，包含 `feat: ...`、`feat(scope): ...` 等 feat 类型时递增 minor 并将 patch 归零，其余递增 patch。提交正文中的 feat 不参与判断，`!` 标记不触发 major 升级。清单明确指定同一 major 内尚未发布的新 minor／patch 时保留该版本；跨 major 变化会停止，须单独确认后再按获准流程处理。重复运行只恢复同一已知发布提交，不覆盖其他提交的标签，也不以再次发版掩盖验收失败。
 
 两个发布脚本和两份行为测试由 `unif-skill/unif-portal-dev-skills` 单一维护，本仓保留同源副本和逐文件摘要。升级时从显式指定的本地源码同步，在 Uni 仓执行：
 
