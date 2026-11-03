@@ -1,6 +1,6 @@
 ---
 name: uni-rn-dev
-description: 在 React Native 应用或库中实现、调整或审查组件、Hook、样式、交互状态、平台适配和原生接入时使用。不用于纯文案修改或原生鸿蒙代码。
+description: 在 React Native 应用或库中实现、调整或审查组件、Hook、样式、交互状态、平台适配和原生接入，或进行 iOS 真机安装、Metro 调试及设备连接恢复时使用。不用于纯文案修改或原生鸿蒙代码。
 ---
 
 # React Native 开发规范
@@ -13,6 +13,7 @@ description: 在 React Native 应用或库中实现、调整或审查组件、Ho
 |---|---|
 | 组件、Hook、受控交互、主题和样式 | [组件与状态](references/components.md) |
 | 平台适配、原生依赖、宿主与验证 | [平台接入](references/platform-integration.md) |
+| iOS 实体设备安装、当前 JS 核实、Metro 或自动化连接恢复 | [iOS 安装与调试](references/ios-device-debugging.md) |
 
 本目录包含完整 RN 实现指引，可独立使用。目录与文件按项目有效约定组织；需要通用组织规则时可选用 `uni-code-organization`，库工程可选用 `uni-rn-library`，文档任务可选用 `uni-documentation`。它们不是安装前置。
 
