@@ -7,7 +7,7 @@
 | 技能 | 用途 |
 |---|---|
 | [uni-code-organization](skills/uni-code-organization/SKILL.md) | 前端、RN、鸿蒙、后端等工程的目录归属、源码与配置文件、环境变体、命名与公共入口 |
-| [uni-rn-dev](skills/uni-rn-dev/SKILL.md) | RN 组件、Hook、样式、交互状态与原生平台接入 |
+| [uni-rn-dev](skills/uni-rn-dev/SKILL.md) | RN 组件、Hook、样式、平台接入与 iOS 安装调试 |
 | [uni-rn-library](skills/uni-rn-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
 | [uni-harmony-dev](skills/uni-harmony-dev/SKILL.md) | API 26／V2 下的 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
 | [uni-harmony-library](skills/uni-harmony-library/SKILL.md) | API 26 原生 HAR 库公共入口、依赖资源、打包发布与真实宿主示例 |
@@ -79,3 +79,5 @@ npx skills update -g uni-code-organization uni-rn-dev \
 配置结构校验器的回归使用 `python3 -m unittest discover -s tests -v`，只使用合成配置，不读取真实凭据。
 
 使用[评测任务](evals/cases.md)检查实际输出、独立使用和任务边界，再核对格式、相对引用及插件清单。行为运行记录放在仓库外；计划和设计保留在 `docs/`，不进入技能默认上下文。
+
+[RN 平台独立使用](evals/rn-platform-ownership.md)覆盖 iOS 安装调试和变更验证范围，核对通用流程不依赖企业技能。
