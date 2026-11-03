@@ -1,6 +1,6 @@
 interface:
   display_name: "Uni 代码组织规范"
-  short_description: "跨语言工程的目录、源码与配置归属、命名和公共入口规范"
-  default_prompt: "使用 $uni-code-organization 按当前语言和工程约定组织本次目录与文件变更。"
+  short_description: "跨语言工程的目录、函数与异步流程的职责、配置归属及公共入口规范"
+  default_prompt: "使用 $uni-code-organization 按当前语言和工程约定组织本次目录、函数及流程变更。"
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.svg"

@@ -1,6 +1,6 @@
 ---
 name: uni-code-organization
-description: 在组织或审查工程目录、文件职责、命名、公共入口、配置归属与环境变体，或进行相关新增、拆分和迁移时使用。单纯文案修改或接口查询不触发。
+description: 在组织或审查工程目录、文件与函数职责、命名、公共入口、配置归属与环境变体，或进行相关新增、拆分、迁移及异步流程重构时使用。单纯文案修改或接口查询不触发。
 ---
 
 # 代码组织规范
@@ -13,6 +13,7 @@ description: 在组织或审查工程目录、文件职责、命名、公共入�
 |---|---|
 | 新增功能、确定目录或共享代码归属 | [目录与职责](references/structure.md) |
 | 拆分文件、类型、常量、样式、命名或导出 | [文件角色与命名](references/file-rules.md) |
+| 函数职责、同步／异步边界、调用顺序与行为保持重构 | [函数与异步流程](references/functions-and-async.md) |
 | 配置文件、环境变体、模板对齐与加载入口 | [配置归属与一致性](references/configuration.md) |
 | 涉及框架固定入口、生成文件或平台差异 | [平台与工具边界](references/platforms.md) |
 
