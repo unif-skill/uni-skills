@@ -1,0 +1,440 @@
+{
+  "formatVersion": 1,
+  "cases": [
+    {
+      "id": "uni-code-organization-application",
+      "skill": "uni-code-organization",
+      "mode": "application",
+      "prompt": "请审阅 fixtures 中这一新增私有组件的组织草稿，给出可以直接交给开发者评审的目录树、各文件内容归属和必要导入／导出调整。随后说明 variant-a 与 variant-b 各自会怎样影响方案。只输出方案，不修改或运行工程。",
+      "fixtures": {
+        "facts.md": "这是一份新 React Native 应用的静态设计资料。已确定 screens/ 用于页面，应用当前只有 App.tsx、screens/ReadingsScreen.tsx。ReadingsScreen 需要一个私有 MeasurementCard，同页并排显示两个传感器。\nMeasurementCard 接收 reading、onRefresh，显示读数；达到 38 时高亮，使用项目主题 token，不改变阈值或刷新行为。组件显示距本次挂载经过的秒数，每个实例独立计时，卸载后停止；每个实例可独立刷新。\n当前无跨页面消费者；项目尚未规定组件配套文件命名。App 通过现有页面入口加载 ReadingsScreen，没有待添加的全局服务或额外业务功能。\n本题只涉及这一新增单元的组织，不要求迁移整个应用。",
+        "screens/ReadingsScreen.tsx": "import { MeasurementCard } from './MeasurementCard';\nexport function ReadingsScreen() {\n  return <>{/* 实际页面传入两个不同的 reading 与 onRefresh */}<MeasurementCard reading={left} onRefresh={refreshLeft} /><MeasurementCard reading={right} onRefresh={refreshRight} /></>;\n}\n// 本文件为省略数据装配部分的静态片段；left/right 由页面现有数据层提供。\n",
+        "screens/MeasurementCard.tsx": "import React, { useEffect, useRef, useState } from 'react';\nimport { Text, View, Pressable, StyleSheet } from 'react-native';\nimport { tokens } from '../theme';\ninterface Reading { sensorId: string; value: number; unit: string; }\ninterface MeasurementCardProps { reading: Reading; onRefresh: () => void; }\nconst HIGHLIGHT_THRESHOLD = 38;\nconst styles = StyleSheet.create({ card: { padding: tokens.spacing.medium }, warning: { backgroundColor: tokens.colors.warningSurface } });\nexport function MeasurementCard({ reading, onRefresh }: MeasurementCardProps) {\n  const [seconds, setSeconds] = useState(0);\n  const timer = useRef<ReturnType<typeof setInterval> | undefined>(undefined);\n  useEffect(() => {\n    timer.current = setInterval(() => setSeconds(value => value + 1), 1000);\n    return () => { if (timer.current !== undefined) clearInterval(timer.current); };\n  }, []);\n  const highlighted = reading.value >= HIGHLIGHT_THRESHOLD;\n  return <View style={[styles.card, highlighted && styles.warning]}><Text>{reading.value}{reading.unit} · {seconds}s</Text><Pressable accessibilityRole=\"button\" accessibilityLabel=\"刷新读数\" onPress={onRefresh}><Text>刷新</Text></Pressable></View>;\n}\n",
+        "variant-a.md": "独立变体 A：同样需求放到一个已有项目。该项目 AGENTS 明确采用 screens/<page>/components/<component>/，配套文件命名为 <Component>.props.ts、<Component>.tokens.ts、<Component>.styles.ts，页面内部相对导入。现有页面其他组件都遵循这一约定。",
+        "variant-b.md": "独立变体 B：项目已有 schema/reading.schema.json 作为读数结构的唯一维护源；生成脚本输出 schema/reading.generated.ts，下列类型已经从 schema/index.ts 公开。新增组件接收到的 reading 就是此契约，不是另一种展示 DTO。其他条件与基础场景一致。",
+        "schema/reading.schema.json": "{\"type\":\"object\",\"required\":[\"sensorId\",\"value\",\"unit\"],\"properties\":{\"sensorId\":{\"type\":\"string\"},\"value\":{\"type\":\"number\"},\"unit\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+        "schema/reading.generated.ts": "// GENERATED FROM reading.schema.json. Do not edit this generated file.\nexport interface Reading { sensorId: string; value: number; unit: string; }\n",
+        "schema/index.ts": "export type { Reading } from './reading.generated';\n"
+      },
+      "rubric": [
+        "基础场景将组件及配套内容归到 ReadingsScreen 私有范围；没有创建全局公共组件或无实际内容的目录，没有为无消费者的单元增加公共出口。",
+        "给出可评审的职责划分：组件实现、props／手写类型、业务含义固定阈值、样式分别有明确归属；基础命名可采用 types.ts、constants.ts、styles.ts，不能只罗列文件而不说明放什么。",
+        "timer、seconds 和 highlighted 保持实例／计算作用域；没有把 ref、计时器或计算结果搬到模块常量或 variables.ts；保留每实例计时、卸载清理、阈值与刷新语义。",
+        "variant-a 沿用已采用的配套文件名与私有目录，不强制全仓迁移到本技能默认命名。",
+        "variant-b 从已有公开生成类型引用 Reading；不重复手写字段，不手改生成文件，也不为组织风格另引入 Schema。",
+        "指出必要的调用导入与实际消费者检查，保留主题及无障碍信息；验证建议覆盖两个同时挂载实例和卸载，不把静态方案称为运行通过。"
+      ],
+      "required_skills": [
+        "uni-code-organization"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-code-organization 现行任务适配。将“有 props、命名阈值、样式和实例计时器的私有组件”具化为代码草稿，保留既有命名与 Schema 变体。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-code-organization-discovery_positive",
+      "skill": "uni-code-organization",
+      "mode": "discovery_positive",
+      "prompt": "这个工程已经用 features 管业务。现在要把一个 900 行的页面拆成页面、两个私有子组件和数据适配文件，还要迁移它的环境配置入口。请帮我确定目录、文件职责和对外导出，检查现有路由及调用方需要同步哪些地方。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-code-organization：任务实际涉及目录、文件职责、入口及配置迁移。",
+        "选择理由应落到该请求的组织与迁移工作，而非仅因出现“页面”猜测平台。"
+      ],
+      "required_skills": [
+        "uni-code-organization"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-code-organization 现行任务适配。自然语言发现正例，无技能名称提示。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-code-organization-discovery_negative",
+      "skill": "uni-code-organization",
+      "mode": "discovery_negative",
+      "prompt": "README 中有一句“所有组建按责职分组，入口统一暴露”。请只修正这句话的错别字，让它适合放在工程介绍里。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-documentation，因为请求是工程文字校正。",
+        "不应选择 uni-code-organization：没有改变或审查文件职责、目录、命名或入口。"
+      ],
+      "required_skills": [
+        "uni-documentation"
+      ],
+      "forbidden_skills": [
+        "uni-code-organization"
+      ],
+      "source": "evals/cases.md；对应 uni-code-organization 现行任务适配。自然语言发现反例：文案包含组织术语但无工程组织任务。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-rn-dev-application",
+      "skill": "uni-rn-dev",
+      "mode": "application",
+      "prompt": "请审阅 fixtures 中的编辑器草稿，给出修正方案及关键伪代码，说明用户手工输入、切换笔记和离开页面时的行为，并列出本次必要的验证。只做静态评审，不运行或修改应用。",
+      "fixtures": {
+        "facts.md": "这是非 Unif 的 React Native 应用，使用其当前锁定的 React/RN 版本。本题提供的是省略非相关部分的代码快照。\n父页面拥有 noteId 对应的正文，通过 value、onChange 传给编辑器。父页面也可通过撤销和加载服务端内容改变 value。切换 noteId 时会复用同一个编辑器 React 实例。读取附件可把解析出的 text 作为一次输入事件交给父页面；同一目标一次只接受一项读取；切换笔记后新目标可立即开始它自己的读取，失败保持用户正文并呈现现有错误反馈。\n应用根节点已有 ThemeHost、GestureHost、OverlayHost；编辑器所在页面已经位于这些宿主内。附件读取由现有原生依赖和项目 adapter 提供，iOS/Android 接线与权限说明已在应用维护。本次没有新增原生依赖或改变平台支持的需求。",
+        "ui/TextComposer.contract.txt": "现有项目组件 TextComposer 的公开 props：\nvalue: string；onChangeText: (text: string) => void；busy: boolean；onReadAttachment: () => void；error?: string。\nTextComposer 用 value 展示正文并在用户编辑时触发 onChangeText，不另存一份业务正文。按钮 busy 时不可再次点击。其焦点、字号、键盘与无障碍实现由现有 UI 包维护。\n这份文件描述本题项目自己的组件契约，并非外部 SDK API。",
+        "services/attachmentReader.contract.txt": "本题已有项目 adapter：startRead() 返回 { result: Promise<{text: string}>, cancelWait: () => void }。\nresult 表示本次读取结果。cancelWait 结束调用方的等待，result 以项目既有的 Cancelled 错误结算；底层读取有自己的收尾周期，由 adapter 管理。此入口未把文件所有权交给编辑器，也未提供编辑器可删除的路径。权限拒绝与读取失败以既有错误格式返回。\n这里只是项目接口资料，不是对任何外部原生 SDK 的新增声明。",
+        "NoteEditor.tsx": "import React, { useEffect, useState } from 'react';\nimport { TextComposer } from './ui';\nimport { startRead, isCancelled, messageFor } from './services/attachmentReader';\ninterface Props { noteId: string; value: string; onChange: (value: string) => void; }\nexport function NoteEditor(props: Props) {\n  const [draft, setDraft] = useState(props.value);\n  const [busy, setBusy] = useState(false);\n  const [error, setError] = useState<string>();\n  useEffect(() => { setBusy(false); setError(undefined); }, [props.noteId]);\n  async function readAttachment() {\n    setBusy(true);\n    setError(undefined);\n    const task = startRead();\n    try {\n      const result = await task.result;\n      setDraft(result.text);\n      props.onChange(result.text);\n    } catch (cause) {\n      if (!isCancelled(cause)) setError(messageFor(cause));\n    } finally { setBusy(false); }\n  }\n  return <TextComposer value={draft} onChangeText={setDraft} busy={busy} onReadAttachment={readAttachment} error={error} />;\n}\n",
+        "trace.txt": "T0: noteId=A, props.value=\"草稿 A\"；用户手工输入后父页面保存回调未收到事件。\nT1: 在 A 上发起读取 op1。\nT2: 父页面复用编辑器，切换到 noteId=B，props.value=\"草稿 B\"。\nT3: B 上开始新的读取 op2；op1 先返回。\nT4: 页面卸载；op2 随后失败。\n另一路径：同 noteId 下父页面执行撤销，props.value 变化而本地 draft 未变化。\n以上是合成事件轨迹，并非设备日志。"
+      },
+      "rubric": [
+        "识别并修复双份正文来源：展示父级受控 value，用户编辑通过 onChange 回传；父级撤销和 noteId 变化能反映到界面，不用一次性 useState 初始化替代受控输入。",
+        "异步读取捕获所属组件实例、目标及操作身份；目标切换、取消、卸载后使旧结果失效，即便新旧 noteId 将来相同也不重新接纳旧操作。",
+        "保护 success、catch 与 finally 全部分支；旧 op1 不写 B 的正文、错误或 busy，不提前结束 op2；卸载后的 op2 不写界面。",
+        "使用已有 cancelWait 清理等待并按契约处理取消；不把 cancelWait 当底层停止，不新增编辑器文件删除或编造 SDK 中不存在的终止接口。",
+        "保留错误反馈、单项读取、已有 TextComposer 交互和根宿主，避免为局部修正新建重复宿主、全局 store 或升级依赖。",
+        "验证包含手工输入回传、父级撤销、目标切换、同标识重建、多次读取顺序和卸载失败；清楚区分逻辑／组件检查与尚未执行的原生设备、键盘及业务验收。"
+      ],
+      "required_skills": [
+        "uni-rn-dev"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-rn-dev 现行任务适配。将受控输入与迟到异步结果任务具化为 TSX 草稿、本地 adapter 契约和事件轨迹。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-rn-dev-discovery_positive",
+      "skill": "uni-rn-dev",
+      "mode": "discovery_positive",
+      "prompt": "React Native 表单接收父页面的 value 和 onChange。现在点击附件后会异步填回文本，切到另一个客户时旧请求偶尔把新客户输入覆盖了。帮我检查这个组件和 Hook 的状态、依赖及卸载处理，并给修复方案。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-rn-dev：这是 RN 组件／Hook 的受控状态与生命周期修复。",
+        "选择不能仅按“异步请求”转成后端任务；需覆盖实际 RN 场景。"
+      ],
+      "required_skills": [
+        "uni-rn-dev"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-rn-dev 现行任务适配。自然语言发现正例。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-rn-dev-discovery_negative",
+      "skill": "uni-rn-dev",
+      "mode": "discovery_negative",
+      "prompt": "这个非 Unif 项目是原生 HarmonyOS API 26 应用，页面写在 Editor.ets 中。页面重建后，上一轮媒体操作会把结果交给新页面。帮我检查 ArkUI 状态和 UIAbility／页面生命周期，给修复方案。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-harmony-dev：目标是原生 ArkTS／ArkUI 生命周期。",
+        "不应选择 uni-rn-dev：没有 RN／RNOH 组件或接入工作。"
+      ],
+      "required_skills": [
+        "uni-harmony-dev"
+      ],
+      "forbidden_skills": [
+        "uni-rn-dev"
+      ],
+      "source": "evals/cases.md；对应 uni-rn-dev 现行任务适配。自然语言发现反例：相似问题发生在原生鸿蒙。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-rn-library-application",
+      "skill": "uni-rn-library",
+      "mode": "application",
+      "prompt": "请审阅 fixtures 的抽库候选与评审草案，给出本地候选的工程、依赖、示例及验证安排，并判断草案中的处理建议哪些可采用。只输出可评审方案，不执行发布、配置远端或修改工程。",
+      "fixtures": {
+        "scope.md": "已授权把应用的 TS 适配层提取为一个 React Native 库，本次交付限本地候选与验证方案。适配层调用应用已采用的原生 SDK，不维护自己的 Objective-C、Swift、Java 或 Kotlin 源码。\n真实消费者是当前 iOS/Android 应用；本题没有 SDK 的 Web、Expo Go 或 HarmonyOS 支持声明。SDK 的名称和具体调用签名与本题工程决策无关，材料不提供新的 SDK API。\n应用已有精确版本的 SDK 补丁，由应用的原生依赖维护者维护。已确认分发方式是宿主从该维护源取得并在自身安装流程应用，库无权变更补丁归属。\n项目已采用组织提供的 Yarn／Turbo／release-it 工程模板，并已有 website/、example/ios、example/android 与对应检查脚本。公开发行阶段需核验站点，但本次不是公开发行或远端接入。\n支持范围尚待独立消费核实；开发锁定组合不能自动写成所有消费者最低要求。",
+        "candidate-tree.txt": "package.json\nsrc/index.ts\nsrc/reader.ts              # TS 适配层\nsrc/types.ts               # 当前公开契约\nexample/                  # 源码联调宿主\nexample/ios/\nexample/android/\nwebsite/\n.github/delivery.json\n.github/scripts/check-delivery.cjs\n.github/scripts/check-library.cjs\npatches/                  # 目前只在原应用有 SDK 补丁；候选库此处不存在补丁\n",
+        "adoption-record.txt": "采用标准由项目已提交的 .github/delivery.json 记录；本地技能目录另有未经此项目采用的新草稿。\n已存在命令：yarn typecheck、yarn lint、yarn test、yarn build、node .github/scripts/check-delivery.cjs、node .github/scripts/check-library.cjs pack。\nCI 使用本仓已提交脚本。example 目前通过库工作区源码入口消费；尚无从真实 tarball 安装的独立消费者记录。\nwebsite 是本项目既有入口，未提出更换框架或新建站点。",
+        "version-observations.txt": "目标候选版本：0.2.1。维护记录确认该包历史上发行过 0.2.0。\n本轮精确查询目标 registry 时网络超时；没有得到 0.2.1 是否存在的有效响应。\n已授权范围没有提交、推送、发布、许可证变更或仓库可见性调整。\n以上均为合成静态观察，不是本轮真实联网记录。",
+        "review-draft.md": "待评审建议：\n1. 既然只有 TS，直接删掉 example 的 iOS/Android 宿主，网页展示能运行就足够。\n2. 为免使用者忘记，把原应用补丁复制进库 tarball，增加 postinstall 自动改写消费方 node_modules。\n3. 模板采用状态检查可能过时，CI 每次拉取技能目录最新脚本执行即可。\n4. 先构建库，再直接从工作区 import 一次就可认为产物验证完成。\n5. registry 超时说明目标版本可用；若失败就改回已知的 0.2.0 试发。\n6. 本次先生成本地候选，保持已经采用的工程和 website 入口。\n"
+      },
+      "rubric": [
+        "选择与 TS/TSX 实现相符的 JS/TS 库工程，不创建空壳原生桥；仍保留并核对实际 iOS/Android 原生消费宿主，不因无自有原生源码而取消原生验证。",
+        "保留原 SDK 和已确认补丁维护／分发方式；明确从维护源在宿主应用补丁与核验解析版本，不把补丁擅自放入 tarball 或 postinstall 修改消费者依赖。",
+        "沿用已采用的模板、仓内工具、website 和真实脚本，区分未采用的技能草稿；不让 CI 运行技能目录最新版本或重建无关工程服务。",
+        "安排真实 tarball 内容、公开 exports／类型、必要资源与私有配置检查，并从独立目录按包名／公开路径消费该 tarball；工作区导入和网站构建不能替代这些验证。",
+        "对原生 SDK 的具体能力不编造 Web、Expo Go 或 HarmonyOS 支持；将依赖支持范围、开发锁定组合和补丁精确适用版本分别处理。",
+        "将 registry 超时记为未知，不认定版本空闲、不复用已知历史版本试发；遵守仅本地候选授权，不自行发布、配置远端、改许可或创建新站点。",
+        "结论分开列出源码、产物、独立消费者、原生构建／设备及发布证据，未运行的检查写为计划或待验证。"
+      ],
+      "required_skills": [
+        "uni-rn-library"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-rn-library 现行任务适配。保留 TS 调用原生 SDK、既有补丁、已采用模板、website、本地候选及 registry 超时／历史版本要素；加入待评审草案。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-rn-library-discovery_positive",
+      "skill": "uni-rn-library",
+      "mode": "discovery_positive",
+      "prompt": "我们要把 React Native 应用里复用的音频适配层抽成一个单独维护的包。请确定公开导出、运行依赖和 peer、包内文件、真实消费示例及打包验收；这次先交付本地 tarball 候选。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-rn-library：涉及 RN 抽库、公开入口、依赖与产物消费。",
+        "不应仅按普通应用组件修改处理，发现理由要包含库工程边界。"
+      ],
+      "required_skills": [
+        "uni-rn-library"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-rn-library 现行任务适配。自然语言发现正例。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-rn-library-discovery_negative",
+      "skill": "uni-rn-library",
+      "mode": "discovery_negative",
+      "prompt": "现有 React Native App 已经装好拍照库，设置页需要新增一个“更换头像”入口。它调用应用现有的拍照封装，把返回路径交给已有上传流程；帮我接好页面的加载、失败和取消状态。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-rn-dev：请求是应用消费已有能力并处理页面交互。",
+        "不应选择 uni-rn-library：没有创建、维护或打包库工程。"
+      ],
+      "required_skills": [
+        "uni-rn-dev"
+      ],
+      "forbidden_skills": [
+        "uni-rn-library"
+      ],
+      "source": "evals/cases.md；对应 uni-rn-library 现行任务适配。自然语言发现反例：应用消费已有库。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-harmony-dev-application",
+      "skill": "uni-harmony-dev",
+      "mode": "application",
+      "prompt": "请分析 fixtures 中的媒体操作事件轨迹和伪代码，给出状态、宿主与资源处理的修正方案。用语言无关伪代码写出关键接受结果与清理判定，并说明需要在真实工程补充哪些验证。只读分析，不写 .ets 或执行设备操作。",
+      "fixtures": {
+        "project-facts.md": "这是非 Unif 的原生 HarmonyOS 应用。工程要求以 API 26 与 V2 开发本次新页面；配置记录的 target、compatible SDK 均为 API 26，实际编译器及设备尚需实施时核验。\n媒体能力沿用工程现有提供方。本题没有新的厂商、兼容旧 API 或更换服务需求。UI 更新需要仍有效的页面／宿主；业务草稿另由业务模块持有，不随页面销毁删除。\n输入 URI 从外部相册借用，外部所有者持续管理它。每轮操作还创建自己的预览临时文件。底层 SDK 在发出本轮 source-released 事件前可能继续读取输入和预览文件。\n调用方取消等待会令包装 Promise 结算，底层操作停止与释放事件可更晚到达。输出成功交付业务模块后，输出文件归业务模块管理。\n本题事件名与伪代码都是项目级抽象，不代表真实 HarmonyOS API 签名。",
+        "events.csv": "time,event,instance,host,selection,operation,detail\n0,open,A,H1,photo-7,,建立页面\n1,start,A,H1,photo-7,101,borrowed input URI；owned preview101.tmp\n2,cancel-wait,A,H1,photo-7,101,包装 Promise 已取消；SDK 未发 source-released\n3,destroy,A,H1,photo-7,101,旧页面与宿主销毁\n4,open,B,H2,photo-7,,新页面显示同一条选中记录\n5,start,B,H2,photo-7,102,borrowed input URI；owned preview102.tmp\n6,native-result,A,H1,photo-7,101,旧原生结果迟到\n7,source-released,A,H1,photo-7,101,旧轮不再读取其源资源\n8,native-result,B,H2,photo-7,102,新轮成功并将结果交给业务模块\n9,source-released,B,H2,photo-7,102,新轮不再读取其源资源\n",
+        "draft.pseudo": "# 这是语言无关伪代码；不是 ArkTS 或 SDK API 示例。\nglobal currentHost\nglobal currentSelection\nglobal currentOperation\nopen(host, selection):\n  currentHost = host\n  currentSelection = selection\nstart(operation):\n  currentOperation = operation\nnativeResult(operation, selection, result):\n  if selection == currentSelection:\n    currentHost.show(result)\ncancelWait(operation):\n  operation.promise.reject(Cancelled)\n  delete(operation.borrowedInputUri)\n  delete(operation.previewFile)\nsourceReleased(operation):\n  delete(currentOperation.previewFile)\nclose():\n  currentHost = null\n"
+      },
+      "rubric": [
+        "结果接受判断同时关联操作身份、发起实例、目标与有效宿主；仅比较 selection/photo-7 不足，A／H1 的 101 迟到结果不能交给 B／H2。",
+        "不把页面、UIAbility／宿主和操作视作同一生命周期；不将旧宿主保存在进程全局后供后续操作重用，不以断言或重建相同标识重新激活旧操作。",
+        "明确外部借用输入不能由取消流程删除；本轮自有预览也应等到底层释放条件成立后才能回收，Promise 结算不能替代释放证据。",
+        "source-released 101 只处理 101 的资源，不能删除 currentOperation 即 102 的 preview；处理重复／迟到收尾时保持幂等及操作关联。",
+        "已交付给业务模块的输出与业务草稿保留约定所有权，不随 UI 离开、取消旧轮或源释放而删除；保留错误、取消与资源清理失败的可定位反馈。",
+        "方案维持原生 API 26／V2 与已有提供方，不新增旧 API／V1 兼容、RN 宿主流程、强制技能依赖或未提供的 SDK 方法。",
+        "验证包含事件轨迹中的同标识重建、迟到结果、借用／自有／已交付资源、多轮并行收尾；编译、逻辑替身、真实宿主与设备／业务证据分别报告。"
+      ],
+      "required_skills": [
+        "uni-harmony-dev"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-harmony-dev 现行任务适配。保留非 Unif、API 26／V2、宿主重建、借用资源及 取消等待与底层释放分离等原任务要素，以语言无关事件材料避免虚构平台 API。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-harmony-dev-discovery_positive",
+      "skill": "uni-harmony-dev",
+      "mode": "discovery_positive",
+      "prompt": "一个非 Unif 的原生 HarmonyOS API 26 项目正在新增 ArkUI 页面。后台媒体回调在 UIAbility 重建后还会写旧页面状态，页面自己持有的临时文件也提前清理了。请检查状态、Context 和操作生命周期并给修正方案。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-harmony-dev：目标为原生 ArkTS／ArkUI 状态、Context 与资源生命周期。",
+        "选择理由应区分真实宿主与操作寿命，而不是只匹配“HarmonyOS”名称。"
+      ],
+      "required_skills": [
+        "uni-harmony-dev"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-harmony-dev 现行任务适配。自然语言发现正例。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-harmony-dev-discovery_negative",
+      "skill": "uni-harmony-dev",
+      "mode": "discovery_negative",
+      "prompt": "我们的 React Native 应用通过 RNOH 运行在 HarmonyOS。现在共享的 TSX 组件里 useEffect 依赖漏了 accountId，切换账号后仍显示旧结果。请修这个 React Hook 的依赖和迟到结果处理，代码在 src/Profile.tsx。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-rn-dev：改动对象是 RN／RNOH 的 TSX 和 React Hook。",
+        "不应选择 uni-harmony-dev：请求不涉及原生 ArkTS／ArkUI 实现或 SDK 接线。"
+      ],
+      "required_skills": [
+        "uni-rn-dev"
+      ],
+      "forbidden_skills": [
+        "uni-harmony-dev"
+      ],
+      "source": "evals/cases.md；对应 uni-harmony-dev 现行任务适配。自然语言发现反例：运行平台是鸿蒙但实现为 RN／RNOH。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-harmony-library-application",
+      "skill": "uni-harmony-library",
+      "mode": "application",
+      "prompt": "请判断 fixtures 中这个 HAR 候选当前能向独立消费者承诺什么，给出公开发行准备的补齐方案和分层验收表。指出需要核对或调整的具体入口、资源与示例；只读评审，不构建、发布或改远端。",
+      "fixtures": {
+        "project-facts.md": "这是非 Unif 的原生 HarmonyOS HAR 工程，当前阶段为公开发行准备。已确认目标为 API 26；库和示例本次新建 UI 都需按项目现行 V2 标准交付。工程已有 Hvigor／OHPM 脚本和静态文档站，不要求引入新的包管理或网站框架。\n库封装可复用的缩略图展示与本地格式处理，真实消费者是另一个独立 API 26 原生应用。应用提供媒体访问的权限流程和合法输入；库依赖资源目录里的占位图片、颜色与文案，并调用一个由宿主配置的现有原生媒体依赖。\n库不是应用，不拥有消费应用导航、账号或整个 UIAbility。具体媒体依赖的 API 与设备支持范围未随材料提供。\n当前示例与库在同一工作区，通过私有源码路径导入组件。源码构建记录只来自作者工作区；还未检查 HAR 归档内容，也没有安装归档的独立宿主记录。",
+        "tree.txt": "library/Index.ets\nlibrary/src/main/ets/components/ThumbnailCard.ets\nlibrary/src/main/ets/internal/formatLabel.ts\nlibrary/src/main/resources/base/media/placeholder.png\nlibrary/src/main/resources/base/element/color.json\nlibrary/src/main/resources/base/element/string.json\nexample/entry/src/main/ets/pages/Index.ets\nwebsite/docs/usage.md\nscripts/check-source\nscripts/build-har\n",
+        "library/Index.ets": "export { ThumbnailCard } from './src/main/ets/components/ThumbnailCard';\n// formatLabel 只供库内部使用；没有真实跨包消费者。\n",
+        "example-consumption.txt": "example 当前导入：\nimport { ThumbnailCard } from '../../../../../library/src/main/ets/components/ThumbnailCard';\n作者工作区还通过本地资源路径寻找 placeholder.png。\n示例的原生媒体依赖已在作者电脑配置，文档未列出具体宿主配置来源。\n本次新建的 ThumbnailCard 和示例页面的草稿均使用 @Component／@State；尚无 V2 改写检查记录。\n这里是静态摘录，不提供任何新的媒体 SDK API。",
+        "evidence.txt": "源码检查：静态检查通过记录 1 次（合成）。\n本地构建：scripts/build-har 返回成功记录 1 次（合成）；输出归档未列清单或核对版本。\n共享纯逻辑：Node 中 formatLabel 的字符串测试通过 4 条（合成）。\n示例：只完成源码路径编译，未记录设备运行。\n公开消费：未从实际 HAR 安装。\n发布、下载回验、文档部署：未执行。\n",
+        "release-draft.md": "草案拟写：“库已在全部平台验证，可直接安装 HAR 使用；源码示例和 Node 测试证明资源与媒体能力可用。为了补充浏览器演示，给 HAR 新增 React 与 RN Web 依赖。内部 formatLabel 也一并从主入口导出，以备将来使用。”"
+      },
+      "rubric": [
+        "将现有结论限定为所提供的源码／作者工作区构建／Node 纯逻辑记录，不能承诺 HAR 独立消费、资源可达、原生能力或全部平台通过。",
+        "计划检查实际 HAR 的身份、版本、公开入口、资源和传递依赖；从独立 API 26 原生宿主安装这份归档并经包公开入口消费，不依赖私有源码路径、作者别名或未打包文件。",
+        "识别公开 ThumbnailCard 与内部 formatLabel 的边界；没有为“未来可能”扩大公共表面，示例移到真实公开入口。",
+        "核对占位图片／颜色／文案是否随包交付及运行解析，说明原生依赖与宿主权限、配置和初始化来源；不把作者示例隐式配置视为消费者已具备。",
+        "库与示例的新 UI 同时对齐 API 26／V2，使用工程真实工具核验；不以 @Component／@State 草稿或 Node 通过当作该基线已满足，也不重写无关旧工程。",
+        "认识到 HAR 需要真实原生应用宿主，空宿主构建与网页展示不能证明硬件／权限／资源收尾；不因站点预览要求给 HAR 增加 React、RN Web 或 Expo。",
+        "补齐计划区分源码、归档、独立宿主、设备／业务、注册表与站点证据；不编造媒体 API 或设备支持，不执行未经授权的发布或远端设置。"
+      ],
+      "required_skills": [
+        "uni-harmony-library"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-harmony-library 现行任务适配。将现行 HAR 发行准备任务具化为入口、资源、源码消费与证据清单；媒体 SDK 仅保留需要核验的宿主职责。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-harmony-library-discovery_positive",
+      "skill": "uni-harmony-library",
+      "mode": "discovery_positive",
+      "prompt": "我们准备把一组原生 ArkUI 组件交付为 HarmonyOS HAR。请检查公开 Index、资源和传递依赖如何进包，安排一个独立 API 26 应用从实际 HAR 消费的示例与发行前验收。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-harmony-library：涉及 HAR 工程、公共入口、资源、打包和独立原生消费。",
+        "发现不能停留于普通 ArkUI 页面开发，应覆盖库产物交付。"
+      ],
+      "required_skills": [
+        "uni-harmony-library"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-harmony-library 现行任务适配。自然语言发现正例。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-harmony-library-discovery_negative",
+      "skill": "uni-harmony-library",
+      "mode": "discovery_negative",
+      "prompt": "这个原生 HarmonyOS API 26 业务应用已安装一个经过接入的 HAR。现在要在订单页面调用它现有的上传入口，把进度和取消接到页面状态；请检查页面实现和切换订单后的回调处理。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-harmony-dev：请求是原生应用消费已有 API 的页面状态与生命周期。",
+        "不应选择 uni-harmony-library：没有 HAR 工程、公开入口、依赖或产物维护任务。"
+      ],
+      "required_skills": [
+        "uni-harmony-dev"
+      ],
+      "forbidden_skills": [
+        "uni-harmony-library"
+      ],
+      "source": "evals/cases.md；对应 uni-harmony-library 现行任务适配。自然语言发现反例：应用消费已有 HAR。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-github-delivery-application",
+      "skill": "uni-github-delivery",
+      "mode": "application",
+      "prompt": "请审阅 fixtures 中的交付接入资料：为 RN 新库和既有库分别给出本地接入／迁移及核验步骤，再分别给出 Python 工程 A／B／C 三种观察结果下可完成的工作和完成判定。只做静态方案评审，不执行命令或访问远端。",
+      "fixtures": {
+        "request-scope.md": "本题提供完整交付技能目录及以下静态工程资料；没有依赖任何另一个技能安装位置的约定。\nRN 新库与既有库：已授权把本地工作树同步到项目明确选择的交付模板，完成本地检查。本轮未授权提交、推送、发布、修改远端设置或启用新的外部审查服务。\nPython 工程：同一个任务分三种独立情境。A 仅授权核查与本地文件调整；B 已授权依项目策略修改仓库合并设置和本项目管理的分支规则；C 授权同 B，但关键远端读取失败。所有情境均没有自动发布或新增发布 App 的需求。",
+        "rn/current-state.md": "owner/repo: example-labs/reader-ui；真实包身份由 package.json 中的 @example/reader-ui 确定。\n已采用组织配置文件 .github/organization.json，明确 owner 与包名、Pages 规则、安全策略及已停用自动化。组织配置没有采用任何外部模型审查服务。\n当前项目使用 Yarn、Turbo、release-it；有实际 example/ios 与 example/android、website/，构建、lint、类型与测试脚本已接通。\n.github/ci/android.sh 与 ios.sh 是本项目专用原生构建入口。\n.github/workflows/ci.yml 含项目专用的许可证审查作业和现有必须检查；同步到新标准时需要继续保留。\nscripts/build-llms.cjs 及其测试是项目自有 builder，不能用通用模板覆盖其业务生成规则。\nAGENTS.md 有受管规则块，也有团队手写的项目约定；SECURITY.md 与 PR 模板已有本项目政策。\n旧 .github/delivery.json 有采用摘要与 requiredChecks。CI 当前运行仓内脚本，但还未接入本次模板要求的交付漂移检查。",
+        "rn/proposed-migration.md": "待评审草案：\n1. 用新模板覆盖整个 .github、AGENTS.md 与 scripts/build-llms.cjs。\n2. 在采用记录中豁免所有项目文件，遇到漂移时只更新摘要。\n3. 为获得最新规则，CI 从技能安装目录执行检查脚本。\n4. 顺手启用模板的 PR Agent 服务和新密钥。\n5. 本地 check 通过即报告“GitHub 接入完成”。\n",
+        "python/project-policy.md": "非 RN 的 Python 服务。已有 pyproject.toml 与 GitHub Actions；没有 npm、Turbo、release-it 或注册表发布流程。\n项目期望：默认 main；仅 Squash 合并；合并后删除源分支；main 必须经 PR 且通过实际 PR CI；禁止 main 非快进更新与删除。\n已有更多审批、签名或额外检查时保留；没有新增 bypass 身份的授权。远端父级规则归组织管理。\n当前 workflow 在 pull_request 触发，真实作业名为 Python unit、Python lint；两项均有成功 PR 运行记录。另有 Security scan 由组织要求且已注册。\n",
+        "python/observation-a.json": "{\"scope\":\"local-only\",\"repository\":{\"default_branch\":\"main\",\"allow_merge_commit\":true,\"allow_squash_merge\":true,\"delete_branch_on_merge\":false},\"classic_protection\":{\"status\":404,\"message\":\"Branch not protected\"},\"effective_rules\":{\"status\":200,\"rules\":[\"organization: pull request, 2 approvals\",\"organization: signed commits\",\"organization: required Security scan\"]},\"release_app\":null}",
+        "python/observation-b.json": "{\"scope\":\"remote-changes-authorized\",\"repository\":{\"default_branch\":\"main\",\"allow_merge_commit\":true,\"allow_squash_merge\":true,\"delete_branch_on_merge\":false},\"classic_protection\":{\"status\":404,\"message\":\"Branch not protected\"},\"effective_rules\":{\"status\":200,\"rules\":[\"organization: pull request, 2 approvals\",\"organization: signed commits\",\"organization: required Security scan\"]},\"owned_ruleset\":{\"name\":\"project-main\",\"enabled\":true,\"bypass\":[],\"required_checks\":[\"Python unit\"]},\"release_app\":null}",
+        "python/observation-c.json": "{\"scope\":\"remote-changes-authorized\",\"repository\":{\"status\":200,\"default_branch\":\"main\"},\"classic_protection\":{\"status\":404,\"message\":\"Branch not protected\"},\"rulesets_including_parents\":{\"status\":403,\"message\":\"read denied\"},\"effective_rules\":{\"status\":\"timeout\"},\"release_app\":null}",
+        "python/proposed-setup.md": "待评审草案：给服务生成 RN 的 delivery.json，填入模板的 Android／iOS 必需检查；因为没有发布 App，先创建一个 App 并允许绕过 main 保护。传统保护 404 或 ruleset 读取失败时一律按“未保护”创建新规则。把仓库设置 PATCH 成功当作全部完成。",
+        "rn-new/facts.md": "新 RN 库 owner/repo 为 example-labs/reader-core。组织已为它选择与既有 RN 工程同一套 Yarn／Turbo／release-it 交付模板，组织配置来源和非敏感取值已经明确。\n库的首个 TS 模块已存在，调用现有原生依赖；实际需要 iOS/Android 消费宿主。目前目录只有 src/、package.json 与组织配置草稿，没有 example、Turbo／release-it 接线或 CI。\n以下 manifest 是当前原始草稿，尚未安装／构建或运行测试。\n本次只做本地接入方案，没有外部服务、远端写入或发布授权。",
+        "rn-new/package.json": "{\"name\":\"@example/reader-core\",\"version\":\"0.1.0\",\"private\":false,\"packageManager\":\"yarn@4.6.0\",\"scripts\":{\"build\":\"echo TODO-build\",\"test\":\"echo TODO-test\"}}"
+      },
+      "rubric": [
+        "新 RN 库先补真实构建、测试、原生消费宿主与已选择工具的接线；识别 echo TODO 脚本不足，不能仅写入工作流就认为接入完成。",
+        "RN 迁移依实际采用的组织配置、包身份与模板执行；保留项目专用 CI、原生脚本、LLM builder／测试、AGENTS 非受管内容和已有政策，不用整目录覆盖。",
+        "项目专用 workflow 可通过实际支持的保留机制登记且继续保持仓内漂移检查；不豁免所有文件、不单改摘要绕过检查；CI 运行仓内已提交版本，不依赖技能安装目录或动态最新来源。",
+        "区分本地同步／检查与远端配置／CI 实际运行；仅本地授权下不提交、推送、发布或启用 PR Agent／模型密钥，不将本地通过称为完整远端接入。",
+        "Python 工程沿用其技术栈和现有 CI；不套 RN 采用文件、Yarn／Turbo／release-it 或 Android／iOS 检查，不因没有发布 App 而阻止一般分支保护或新增 App／bypass。",
+        "A 情境可只读核查并准备本地差异，远端设置保持未执行；B 情境在授权内提出真实最小合并设置和本项目规则调整，并依据实际 PR 记录使用 Python unit／Python lint，保留 Security scan 等更强父级要求。",
+        "传统保护 404 不等于没有 ruleset；C 中 403／超时是未知状态，不能当未配置或盲目写入；允许继续不依赖读取失败的只读／本地工作。",
+        "B 的完成判据包含回读仓库设置、规则匹配与启用、实际检查、bypass 以及有效分支规则；保留既有更强保护与非受管项，不以 PATCH 成功证明生效，也不宣称观察到拒绝推送。"
+      ],
+      "required_skills": [
+        "uni-github-delivery"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-github-delivery 现行任务适配。保留 RN 新接入／专有迁移与非 RN 无发布 App 边界；以静态授权分支和观察结果覆盖本地授权、远端授权、读取失败及更强保护。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-github-delivery-discovery_positive",
+      "skill": "uni-github-delivery",
+      "mode": "discovery_positive",
+      "prompt": "团队决定给已有的 Python GitHub 仓库补齐 PR 门禁和分支保护，只允许 Squash，并保留组织继承的签名与额外检查。这个服务没有包发布机器人。请核对实际 CI 作业和远端规则，准备配置差异。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-github-delivery：涉及 GitHub CI 门禁、仓库设置与有效分支保护。",
+        "应识别这是平台无关交付配置任务，不能因不是 RN 或没有发布 App 而漏选。"
+      ],
+      "required_skills": [
+        "uni-github-delivery"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-github-delivery 现行任务适配。自然语言发现正例：非 RN 且无自动发布。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-github-delivery-discovery_negative",
+      "skill": "uni-github-delivery",
+      "mode": "discovery_negative",
+      "prompt": "帮我看一下这次 GitHub Actions 运行现在是什么状态：Python lint 已成功，Python unit 已失败，日志最后一行是 AssertionError，文档作业还在排队。请用一句话告诉我目前是否能认为整次运行成功。",
+      "fixtures": {},
+      "rubric": [
+        "不应选择 uni-github-delivery：仅查询一次作业状态，没有接入、维护或核验交付配置标准。",
+        "不应扩展为修改 CI、分支保护、发布或仓库设置。"
+      ],
+      "required_skills": [],
+      "forbidden_skills": [
+        "uni-github-delivery"
+      ],
+      "source": "evals/cases.md；对应 uni-github-delivery 现行任务适配。自然语言发现反例：单纯作业状态查询。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-documentation-application",
+      "skill": "uni-documentation",
+      "mode": "application",
+      "prompt": "请根据 fixtures 的契约与静态记录，整理 README、安装指南相关条目和清理脚本说明，并修订现有评测表。直接给出每份文档可替换的文本；保持资料各自用途，缺失信息可以明确标记。只编辑文字草稿，不运行命令、访问设备或改变产品。",
+      "fixtures": {
+        "facts.md": "本题为合成的 RN 媒体处理库文档维护任务。项目声明依赖支持范围为 React >=18 <20、React Native >=0.76 <0.83；本次仅记录 React 19.1／RN 0.81.4 的 iOS 与 Android 宿主验证。SDK 补丁只适用于锁定的 SDK 4.2.1，由宿主维护者提供。没有 Web 或 HarmonyOS 实现支持声明。\n拍摄／处理的权限由宿主配置，原生配置和补丁变化后要重新构建。输入可由外部借用，也可由调用方自己创建；库不取得输入文件所有权。取消会结束调用方等待，但底层可能继续读文件；仅在项目约定的 onSourceReleased 回调后调用方才能处理自己拥有的源文件，外部借用文件仍归外部所有者。\n返回类型、import 路径和完整初始化签名未包含在本题资料；现有使用片段只展示控制流程，不能称为可直接运行的完整示例。\n有效历史设计和验收记录位于 docs/design.md 与 docs/acceptance-2026-10.md，继续作为原有资料。\n文档中的 startTask、result 与 onSourceReleased 是本题合成项目现有契约的局部标识，不对应或声称任何已发布 SDK 的 API；被测者无需查询外部 API。支持范围与历史运行环境也是该合成项目的给定事实，不是对真实依赖或设备的新支持声明。",
+        "README.md": "# Media Helper\n一个实现能力闭环的平台级多端库。\n安装后自动具备各端能力。需要 React 19.1、React Native 0.81.4、SDK 4.2.1，均已经验证。\n## 安装\n使用项目现有包安装命令。安装后不需要原生工程操作。\n## 用法\n下面是可直接运行的完整示例：\n```ts\nconst task = startTask(input);\nawait task.result;\n```\n## 说明\n取消后即可删除输入文件。外部文件和自己创建的文件相同处理。\n## 文档\n[安装](docs/install.md)；[API](docs/api.md)；[设计](docs/design.md)；[验收](docs/acceptance-2026-10.md)。\n",
+        "docs/install.md": "# 安装配置\n## 依赖\n| 依赖 | 支持要求 |\n| --- | --- |\n| React | >=18 <20 |\n| React Native | >=0.76 <0.83 |\n| 原生 SDK | 由项目接入配置指定 |\n## 平台\niOS 与 Android 使用原生宿主。权限配置由宿主维护。\n## 补丁\n使用宿主维护者提供的 SDK 4.2.1 补丁。原生配置或补丁变化后，重新构建相应宿主。\n## 文件收尾\n取消结束调用方等待。底层释放源文件后，onSourceReleased 通知调用方处理自己拥有的源文件。借用文件不转移所有权。\n",
+        "docs/api.md": "# API\n此页当前保留调用流程片段：startTask(input) 返回本轮任务；等待 result 取得结果；onSourceReleased 用于源文件释放通知。\n公开 import 路径、参数与返回类型需要从本次公开入口补齐，尚不能从当前材料确认。\n",
+        "scripts/cleanup.contract.txt": "现有清理脚本调用入口：node scripts/cleanup.cjs --root <目录> [--apply]。\n默认只列出候选，不删除。只有 --apply 才会删除该 root 下已确认的过期缓存文件；不递归处理 root 外路径。\n退出码：0=全部扫描／处理成功；1=至少一项扫描或删除失败；2=参数或 root 校验失败。\n--apply 时遇到一个文件失败会继续处理其他候选，最终退出 1，逐项结果写到终端。这不是事务回滚。\n脚本没有其他选项。本题不授权真实删除。\n",
+        "scripts/README.md": "# 清理缓存\n运行 node scripts/cleanup.cjs --root ./cache 即可删除缓存。失败会回滚所有已删除文件，不必查看退出码。\n",
+        "evals/results.md": "# 验证记录\n| 对象 | 环境 | 结果 | 限制 |\n| --- | --- | --- | --- |\n| 公开类型 | 项目锁定 TypeScript 工具链 | 通过 | 不代表原生运行 |\n| iOS 宿主 | React 19.1 / RN 0.81.4 | 通过 | 未记录硬件媒体场景 |\n| Android 宿主 | React 19.1 / RN 0.81.4 | 通过 | 未记录硬件媒体场景 |\n| Web 预览 | 浏览器静态文档页 | 可打开 | 仅文档呈现 |\n",
+        "new-observations.md": "本轮新增静态材料：上表两个原生宿主的记录只覆盖编译和启动页面，没有记录真实权限拒绝、取消后的文件释放或服务回执。\n网页当前展示静态调用片段；不能执行原生媒体处理。\n本题没有新的构建、设备、站点宽窄屏截图或真实业务执行结果。"
+      },
+      "rubric": [
+        "README 说明库的具体用途、iOS／Android 适用范围与原生宿主条件，去除空泛宣传与“安装自动具备各端能力”；不补造 Web／HarmonyOS 支持。",
+        "区分依赖支持范围、已验证 React/RN 组合、SDK 补丁精确版本；版本信息按同类维度组织，未把一次验证环境变成最低依赖要求或全部版本验证。",
+        "在开始使用处保留权限、原生重建、补丁及文件责任的必要提醒，详情融入现有安装指南对应条目并链接；不在 README 与指南复制整套同义配置。",
+        "准确保留取消与底层释放的区别、onSourceReleased 条件以及借用文件的所有权；不把取消或 Promise 结束改写为可立即删除输入。",
+        "未提供的 import／参数／返回类型明确待核实，现有示例标为流程片段；不编造 API 使其看似完整可运行。",
+        "清理脚本说明正确表达默认预览、--apply 删除范围、0／1／2 退出码、部分失败继续处理且不回滚；没有实际运行删除命令。",
+        "在现有评测表相应行修订编译／启动与硬件、权限、释放限制，保持对象／环境／结果／限制维度，不新增重复的同义检查表或伪造新结果。",
+        "保留设计、历史验收及其时间语境；交付只报告静态文稿整理，链接／生成／构建及宽窄屏页面检查写为未执行或待实施，不能称为产品验收。"
+      ],
+      "required_skills": [
+        "uni-documentation"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-documentation 现行任务适配。改写现行 README／介绍／脚本／指南／评测表任务，提供支持声明、历史验证与操作契约；未虚构完整外部 SDK API。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-documentation-discovery_positive",
+      "skill": "uni-documentation",
+      "mode": "discovery_positive",
+      "prompt": "请整理这个工程的 README 和已有接入指南：README 把测试环境写成了最低版本要求，取消后的文件责任也漏了。请按当前契约修正文案，把详细配置放回已有指南，并同步文档站导航入口。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-documentation：任务是工程文档事实、结构、详情归属和导航维护。",
+        "理由应覆盖增量修订现有资料，不把任务扩大为实现功能或更换文档框架。"
+      ],
+      "required_skills": [
+        "uni-documentation"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；对应 uni-documentation 现行任务适配。自然语言发现正例。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-documentation-discovery_negative",
+      "skill": "uni-documentation",
+      "mode": "discovery_negative",
+      "prompt": "README 的有效契约是“点击重置后清空筛选条件”。现在 React Native 筛选面板的重置按钮只清了显示标签，父页面仍用旧筛选请求数据。请修复按钮和受控状态的接线，使实际行为符合这个契约。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-rn-dev：目标是 RN 组件受控状态与事件接线修复。",
+        "不应选择 uni-documentation：README 作为正确契约被引用，本次没有文档编写或维护任务。"
+      ],
+      "required_skills": [
+        "uni-rn-dev"
+      ],
+      "forbidden_skills": [
+        "uni-documentation"
+      ],
+      "source": "evals/cases.md；对应 uni-documentation 现行任务适配。自然语言发现反例：以文档为契约来源的代码修复。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    }
+  ]
+}

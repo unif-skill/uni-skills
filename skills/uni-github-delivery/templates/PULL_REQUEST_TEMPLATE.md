@@ -10,9 +10,11 @@
 
 <!-- conventional-commits 类型,跟 commit msg 对齐。多选用 - [x] -->
 
-- [ ] `feat` 新功能（通常对应 minor，是否发版按工作流触发范围和版本规则）
-- [ ] `fix` Bug 修复（通常对应 patch，是否发版按工作流触发范围和版本规则）
-- [ ] `refactor` / `chore` / `docs` / `test` / `ci`（是否发版取决于工作流触发范围和版本规则）
+是否发版按工作流触发范围和版本规则判断。
+
+- [ ] `feat` 新功能（通常对应 minor）
+- [ ] `fix` Bug 修复（通常对应 patch）
+- [ ] `refactor` / `chore` / `docs` / `test` / `ci`
 - [ ] **包含 BREAKING CHANGE**（可能触发 major，须先取得明确授权，在 commit body 写 `BREAKING CHANGE: ...`）
 
 ## 验证

@@ -8,4 +8,5 @@
 - 原始评测输出和临时运行记录保存在仓库外；保留设计、计划与必要验收结论。
 - 创建或修改技能使用 skill-creator 和 writing-skills；技术文档使用本仓 uni-documentation。
 - 发布器和两份行为测试以 Unif 技能仓为维护源，使用 `scripts/sync_release_tools.py` 显式同步本地来源，不手改受管副本或摘要；CI 只使用仓内已采用内容，不读取其他私有仓。
+- 模型行为评测器、工作流及其测试在本仓单一维护；Unif 技能仓通过 `scripts/sync_evaluation_tools.py` 显式采用。题库按各包职责维护，模型结果不替代现有格式、工具或真实工程验证。
 - main 推送通过完整验证后自动发版：自当前版本标签以来的待发布提交含 `feat` 类型时升 minor 并将 patch 归零，其余升 patch；显式指定的同 major 新 minor／patch 保留，跨 major 发布停止并等待单独授权。普通维护不自动授权提交、推送、发布或安装。
