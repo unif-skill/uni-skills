@@ -10,8 +10,7 @@ pre-commit:
   commands:
 
     # 分支纪律:不在 main / master 上直接提交。
-    # 并行的另一个会话把 main 重置到 origin 时,你未提交的改动会无声消失、已提交的会从
-    # main 上掉下来 —— 这真实发生过。分支必须在**首次写入之前**就建好,这条只是最后兜底。
+    # 首次写入前建立任务分支,避免并行会话调整主线时影响本次工作;提交守卫只作兜底。
     branch-guard:
       run: |
         # CI 放行:release-it 的版本 commit 就打在 main 上,而 lefthook 的 postinstall

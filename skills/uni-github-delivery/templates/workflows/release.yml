@@ -124,16 +124,9 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      # npm Trusted Publishing 需要 npm CLI ≥ 11.5.1;.nvmrc 的 node 自带的 npm 未必够新,故在此抬一手。
-      #
-      # **不要写 npm@latest** —— npm 的 engines 下限会先于我们 .nvmrc 里钉死的 node 版本往前跳,
-      # 一跳就是全组织发版同时断。2026-07-14 实测:npm@latest 滚到 12.0.1,engines 要求
-      # node ^22.22.2 || ^24.15.0 || >=26,而 runner 按 .nvmrc 装的是 node 24.13.0 →
-      # `npm i -g npm@latest` 直接 EBADENGINE/notsup 挂掉,五个仓的 release 全灭。
-      # (且那次根本不需要升:node 24.13 自带 npm 11.6.2,早就过了 11.5.1 这条线。)
-      #
-      # 锁在 11.x:既保住 OIDC 下限,又不追 npm 的 engines 漂移。将来 Trusted Publishing 真要
-      # npm ≥ 12 了,再把 .nvmrc 的 node 一起抬上去、同批改这里。
+      # npm Trusted Publishing 需要 npm CLI ≥ 11.5.1,不能仅依赖 .nvmrc 中 Node 附带的 npm。
+      # 限定 11.x,避免 npm@latest 的 engines 要求越过工程采用的 Node 版本。
+      # 调整 npm 范围时同时核对 OIDC 下限与 .nvmrc 的兼容性。
       - name: Upgrade npm CLI (required for OIDC)
         run: npm install -g "npm@^11"
 
@@ -286,10 +279,8 @@ jobs:
           node .github/scripts/check-library.cjs published
 
       # 发版成功后显式触发文档部署 —— dispatch 跑 main。
-      # 不靠 deploy-docs 监听 release event:release 事件的 ref 是 tag(v*),而 GitHub Pages
-      # environment 的部署分支策略只放行 main → tag 上的 deploy job 必被拒(实测 [release] 触发的
-      # deploy 在 v0.3.0 上 failure)。workflow_dispatch 跑 main 绕开,且它是 GITHUB_TOKEN 防自触发
-      # 递归的例外(能触发新 run)。文档站是公开交付前置，dispatch 失败必须报告。
+      # 使用 main 上的 workflow_dispatch,避免 release 标签 ref 与只允许 main 的 Pages 环境策略冲突。
+      # workflow_dispatch 可由 GITHUB_TOKEN 触发新 run。文档站是公开交付前置,dispatch 失败必须报告。
       - name: Trigger docs deploy
         if: success()
         env:

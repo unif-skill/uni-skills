@@ -2,29 +2,28 @@
 # 把 uni-github-delivery 的 templates/ 同步到目标 repo 工作树。
 #
 # 跟 setup-repo.sh 分工:
-#   - setup-repo.sh —— 配 GitHub 端(merge methods / ruleset / security / 关 CodeQL / Pages),走 gh api
+#   - setup-repo.sh —— 按工程采用记录与组织配置核对、调整 GitHub 仓库设置和规则,走 gh api
 #   - sync-repo.sh  —— 下发 repo 内的 workflow + 配置文件(本脚本),走文件拷贝 + 变量替换
 #
 # 用法:
-#   ./sync-repo.sh <owner/repo> [target-repo-path]
+#   bash scripts/sync-repo.sh [--check] [--pr-agent] <owner/repo> [target-repo-path]
 #     <owner/repo>        目标 repo 名(如 example/widget),用于 {{REPO}} / URL 替换
 #     [target-repo-path] 目标 repo 本地工作树路径,默认当前目录
 #
 # 行为:
 #   - 只改目标 repo 的【工作树】,不 git add / commit / push —— 改动留给你 review,各仓自己提 PR。
 #   - 幂等:可反复跑。
+#   - --check 只读核对;--pr-agent 仅用于项目已明确选择的 PR Agent 接入。
 #
 # 覆盖策略(关键):
-#   - 强制覆盖(统一标准,不允许单仓 drift):
-#       .github/workflows/{ci,release,pr-title,pr-agent}.yml
+#   - 更新受管文件;采用记录 projectFiles 中已声明的项目专用工作流保留,仍核对摘要:
+#       .github/workflows/{ci,release,pr-title}.yml;PR Agent 工作流按项目采用情况选择
 #       .github/actions/setup/action.yml
 #       lefthook.yml
 #       .github/ISSUE_TEMPLATE/{bug_report,config}.yml
-#   - 主动移除(组织已停用 Dependabot 自动 PR):
-#       .github/dependabot.yaml
-#       .github/workflows/{dependabot-auto-merge,dependabot-automerge}.yml
+#   - 仅移除目标工程 .github/organization.json 的 obsoleteFiles 明确列出的停用自动化。
 #   - marker 级覆盖(共享 Agent bootstrap,保留仓库特有规则):
-#       AGENTS.md 内的 UNIF React Native Standard 共享区块
+#       AGENTS.md 内的 GITHUB DELIVERY STANDARD 区块;已有旧标识按同步工具迁移
 #   - 仅当目标【不存在】时创建(保留各仓 repo 特化,不覆盖):
 #       SECURITY.md / .github/PULL_REQUEST_TEMPLATE.md(保留项目政策与 checklist)
 #       .pr_agent.toml(各仓有特化 review 规则)
@@ -308,8 +307,7 @@ echo ""
 # workflow 文件同步过去了,但它运行时依赖 package.json 里的配置 —— 那些是各仓特化、sync 故意不碰:
 #   ci.yml / nightly 的 `yarn turbo run build:*`      → devDep turbo
 #   release.yml 的 `npx release-it`(npm OIDC publish) → release-it 配置 + npm.skipChecks + conventional-changelog plugin
-# 脚手架不全的新仓(如当初 hms-scan 缺 turbo / release-it)会缺这些 → workflow 跑起来才报错。
-# 这里在 sync 时提前校验 + 报警,免得等 CI 一个个挂才发现。
+# 同步时校验这些运行依赖,缺失则报告失败,不改写项目 package.json。
 echo "→ [4b] 校验 package.json 的 workflow 依赖配置"
 if ! node -e 'const fs=require("fs"); const {dependencies}=require(process.argv[1]); dependencies(JSON.parse(fs.readFileSync(process.argv[2])))' "$TEMPLATES_DIR/scripts/check-delivery.cjs" "$TARGET/package.json"; then
   DIFFERENCES=$((DIFFERENCES + 1))

@@ -1,6 +1,6 @@
 ---
 name: uni-harmony-library
-description: 在创建、提取、维护、打包或发布原生 HarmonyOS HAR 库，接入库工程标准、共享源码与资源或维护原生运行示例时使用。应用仅消费已有 API、RN 库和纯文档任务不触发。
+description: 在创建、提取或维护原生 HarmonyOS HAR 库工程，处理工程标准、公共入口、依赖、共享源码与资源、打包发布或原生运行示例时使用。应用仅消费已有 API、RN 库和纯文档任务不触发。
 ---
 
 # HarmonyOS 库工程

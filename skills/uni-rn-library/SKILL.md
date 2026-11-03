@@ -1,6 +1,6 @@
 ---
 name: uni-rn-library
-description: 在创建、提取、维护、打包或发布 React Native 库，接入工程标准或维护运行示例时使用。应用仅消费已有 API、纯文档或文档站任务不触发。
+description: 在创建、提取或维护 React Native 库工程，处理工程标准、公共入口、依赖、打包发布或运行示例时使用。应用仅消费已有 API、纯文档或文档站任务不触发。
 ---
 
 # React Native 库工程

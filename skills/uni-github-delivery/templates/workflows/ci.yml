@@ -45,7 +45,6 @@ jobs:
         run: node --test .github/actions/verification/verification.test.cjs
       - name: Run actionlint
         # 下载 pinned binary 校验所有 workflow 的 YAML / 表达式 / run 里的 shell。
-        # release.yml 那次 YAML 引号 bug 当初就是缺这道 lint 才漏到 main 的。
         # ubuntu-latest 预装 shellcheck;actionlint 默认自动集成它检查 run: 脚本(SC2086 等)。
         # 显式断言 shellcheck 存在 + 传 -shellcheck=shellcheck,防 runner 未来变更导致 shell 检查静默降级。
         run: |

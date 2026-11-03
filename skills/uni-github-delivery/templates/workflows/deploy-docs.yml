@@ -35,7 +35,7 @@ on:
       - '.github/workflows/deploy-docs.yml'
   # 发版后由 release.yml 在 release job 成功后显式 dispatch 本 workflow(跑 main)刷新版本号。
   # 不用 on.release —— release 事件的 ref 是 tag(v*),deploy job 会被 GitHub Pages environment
-  # 的「仅 main」部署分支策略拒(实测 [release] 触发的 deploy 在 v* tag 上 failure)。见 release.yml。
+  # 的「仅 main」部署分支策略拒绝。发布后的部署由 release.yml 显式触发。
   workflow_dispatch:
 
 permissions:
