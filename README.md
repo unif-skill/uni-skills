@@ -76,8 +76,23 @@ npx skills update -g uni-code-organization uni-rn-dev \
 
 修改所属技能及其引用资料，保持触发范围明确。通用规则不绑定某个企业、应用、固定包名或个人路径；项目已有有效约定与工具要求优先。
 
-配置结构校验器的回归使用 `python3 -m unittest discover -s tests -v`，只使用合成配置，不读取真实凭据。
+维护脚本回归使用 `python3 -m unittest discover -s tests -v`，配置测试只使用合成配置，不读取真实凭据。`python -m scripts.validate_repository` 另核对插件清单、版本、仓内入口和已采用发布工具；交付工具的完整检查继续运行 `bash skills/uni-github-delivery/scripts/validate.sh`。
 
 使用[评测任务](evals/cases.md)检查实际输出、独立使用和任务边界，再核对格式、相对引用及插件清单。行为运行记录放在仓库外；计划和设计保留在 `docs/`，不进入技能默认上下文。
 
 [RN 平台独立使用](evals/rn-platform-ownership.md)覆盖 iOS 安装调试和变更验证范围，核对通用流程不依赖企业技能。
+
+### 自动发版与共享工具
+
+main 推送通过现有完整 CI 验证后，发布步骤核对候选版本并创建对应 GitHub Release。需要递增版本时，仅将新版本写回 `plugin.json`，重新验证后提交；仅发布 job 使用仓库自带 `GITHUB_TOKEN` 的内容写权限。PR、tag 和手动工作流只验证，不发布。发布提交带跳过 CI 标记，并由发布 job 排除，避免自触发。
+
+minor 与 patch 均可使用。未显式指定新版本时默认递增 patch；清单明确指定同一 major 内尚未发布的新 minor／patch 时保留该版本。跨 major 变化会停止，须单独确认后再按获准流程处理。重复运行只恢复同一已知发布提交，不覆盖其他提交的标签，也不以再次发版掩盖验收失败。
+
+两个发布脚本和两份行为测试由 `unif-skill/unif-portal-dev-skills` 单一维护，本仓保留同源副本和逐文件摘要。升级时从显式指定的本地源码同步，在 Uni 仓执行：
+
+```sh
+python -m scripts.sync_release_tools --source /path/to/unif-portal-dev-skills --check
+python -m scripts.sync_release_tools --source /path/to/unif-portal-dev-skills
+```
+
+`--check` 只读比较指定来源；不带该参数时仅更新四个受管文件及 `scripts/release-tools.json`，保留其他项目文件，不提交或修改远端。发现本地受管文件与已采用摘要不一致时停止，先核对差异归属。来源仓不是 CI 或插件运行依赖，不需要增加访问其他私有仓的凭证；摘要校验表示已采用内容一致，不代表采用了上游最新版本。审查同步差异并通过测试后，按本次授权正常提交。
