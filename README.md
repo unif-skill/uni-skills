@@ -1,11 +1,12 @@
 # Uni Skills
 
-通用工程技能集合，提供代码组织、React Native 与 HarmonyOS 开发、库工程、文档规范和 GitHub 交付工具。每个技能独立维护，也可以按任务组合使用。
+通用工程技能集合，提供第三方技术接入、代码组织、React Native 与 HarmonyOS 开发、库工程、文档规范和 GitHub 交付工具。每个技能独立维护，也可以按任务组合使用。
 
 ## 技能
 
 | 技能 | 用途 |
 |---|---|
+| [uni-third-party-integration](skills/uni-third-party-integration/SKILL.md) | 第三方库、框架与 SDK 的设计、接入、封装、升级评估及排障 |
 | [uni-code-organization](skills/uni-code-organization/SKILL.md) | 前端、RN、鸿蒙、后端等工程的目录归属、源码与配置文件、环境变体、命名与公共入口 |
 | [uni-rn-dev](skills/uni-rn-dev/SKILL.md) | RN 组件、Hook、样式、平台接入与 iOS 安装调试 |
 | [uni-rn-library](skills/uni-rn-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
@@ -67,7 +68,7 @@ npx skills add unif-skill/uni-skills -g \
 ```sh
 npx skills update -g uni-code-organization uni-rn-dev \
   uni-rn-library uni-harmony-dev uni-harmony-library \
-  uni-documentation uni-github-delivery
+  uni-documentation uni-github-delivery uni-third-party-integration
 ```
 
 此命令更新已安装的共享副本；首次添加新技能时重新执行上方安装命令。Codex 插件按插件机制单独更新，不会自动改写共享目录。两种入口并存时分别更新并核对同一版本的内容，继续禁用 Codex 的重复共享入口。安装或更新后，在目标工具中确认技能可见；旧会话仍使用缓存时，重新打开会话。

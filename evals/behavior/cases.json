@@ -435,6 +435,59 @@
         "uni-documentation"
       ],
       "source": "evals/cases.md；对应 uni-documentation 现行任务适配。自然语言发现反例：以文档为契约来源的代码修复。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+    },
+    {
+      "id": "uni-third-party-integration-application",
+      "skill": "uni-third-party-integration",
+      "mode": "application",
+      "prompt": "请评审 fixtures/scenarios.md 中四个独立场景，分别给出当前采用方案、依据和必要验证。只输出结论，不运行或修改工程。",
+      "fixtures": {
+        "scenarios.md": "# 第三方接入方案评审\n\n请依据本目录的匿名合成资料，为以下四个独立场景分别给出当前采用方案、依据和必要验证。只输出评审结论，不修改工程、不访问网络。资料代表题内固定快照，不是真实产品事实。\n\n团队明早演示，已有统一会话管理器草稿，开发者倾向沿用以免返工。请给出可执行的判断，不只列待办。\n\n## A：设计接入\n\n库声明 `nexa-client: ^2.4.0`，锁文件解析为 2.4.1。两个独立窗口可同时传输，关闭一个窗口不能中止另一个；租户切换时旧操作不能向新租户回交。草稿为每个窗口创建客户端，关闭窗口时调用全局 stopAll，并复制 SDK 的断线重连状态。网上最新首页示例采用 `createScope()`。\n\n题内官方 2.4 指南：每个认证会话复用一个 Client；并发传输用 Client.openChannel()，每个 Channel 可 close()；SDK 管理连接和断线重连。官方 2.4 类型没有 createScope；官方 3.0 迁移指南说明该方法随 3.0 新增，需宿主 runtime 50+。项目宿主为 runtime 44。认证会话切换后的回交隔离属于项目自身契约。\n\n## B：发布版缺陷\n\n独立项目同样锁定 2.4.1、runtime 44，销毁 Channel 后仍收到一次 progress。已确认本次允许兼容补丁升级，不能升级 runtime。合成官方 issue #82 复现条件与该项目一致；PR #91 已合并，变更日志标明 2.4.3 包含修复；注册表 2.4.3 已发布且支持 runtime 44。3.0 也包含修复。没有本项目升级后测试记录。\n\n## C：未发布修复\n\n另一独立项目锁定 2.4.1。issue #85 的跨 Channel 取消缺陷有已合并 PR #95，但 2.4.3 发布清单不含它，下一版本未发布。官方 2.4 指南给出 `cancelMode: 'isolated'` 配置，可规避本题缺陷且保持已确认取消语义。PR 的单测已通过，项目尚未验证这一配置。\n\n## D：资料不全\n\n另一厂商包 orbit-client 锁定 1.8.0。缓存仅有无版本社区文章，声称新版修复大文件中断；官方文档和注册表当前不可访问。本地类型存在 onReleased，源码可定位资源释放点；尚未核实对应版本的官方建议与修复发布。项目已授权修复本次中断，未授权更换服务或新增权限。\n"
+      },
+      "rubric": [
+        "A 使用实际锁定 2.4.1 的 Client/openChannel 模式，不照搬 3.0 createScope；不复制 SDK 重连状态，保留项目认证隔离与单窗口取消边界。",
+        "B 依据问题条件、发布记录和包可用性选择兼容且已授权的 2.4.3，不升级 runtime 或强行采用 3.0；提出复现及消费者回归，不宣称项目已修复。",
+        "C 明确合并 PR 不等于发行修复，2.4.3 不含本题修复；采用已说明有效的官方 isolated 配置并验证，不引入无必要补丁。",
+        "D 明确无版本社区文章不足以证明官方支持或修复已发布，不猜升级版本、权限或服务变更；基于当前类型、源码和复现继续定位，根因确认前不预定修复。",
+        "关键决策指明题内对应官方资料与版本，区分当前事实、选择理由和未验证项；验证覆盖受影响资源和消费者，不把上游证据等同本地或真实业务通过。"
+      ],
+      "required_skills": [
+        "uni-third-party-integration"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/third-party-integration.md；匿名合成的四个独立场景，来源状态均为题内固定事实，不对应真实第三方产品，不构成网络核查或工程运行证据。"
+    },
+    {
+      "id": "uni-third-party-integration-discovery_positive",
+      "skill": "uni-third-party-integration",
+      "mode": "discovery_positive",
+      "prompt": "为现有客户端设计传输 SDK 的接入封装，两个窗口要独立取消。项目锁了旧版，官网首页展示新版 API，团队已有一个自写会话管理器草稿。请确定采用方案，并判断另一个已合并修复是否值得升级。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-third-party-integration：任务包含第三方 SDK 接入设计、版本适用性和修复采用判断，不局限于依赖报错。"
+      ],
+      "required_skills": [
+        "uni-third-party-integration"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/third-party-integration.md；设计与版本判断的自然语言发现正例，不提示技能名称。"
+    },
+    {
+      "id": "uni-third-party-integration-discovery_negative",
+      "skill": "uni-third-party-integration",
+      "mode": "discovery_negative",
+      "prompt": "请只把项目 README 里的“第三方 SDK 接如说明”改成“第三方 SDK 接入说明”，保留其他文字和实现。",
+      "fixtures": {},
+      "rubric": [
+        "选择 uni-documentation；不选择 uni-third-party-integration，因为仅修正工程文案，没有核查、设计或改变 SDK 用法。"
+      ],
+      "required_skills": [
+        "uni-documentation"
+      ],
+      "forbidden_skills": [
+        "uni-third-party-integration"
+      ],
+      "source": "evals/third-party-integration.md；提及第三方 SDK 但仅修正文案的发现反例。"
     }
   ]
 }

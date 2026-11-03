@@ -1,0 +1,6 @@
+interface:
+  display_name: "Uni 第三方技术接入"
+  short_description: "第三方库、框架与 SDK 的官方依据核查、方案选择及接入验证"
+  default_prompt: "使用 $uni-third-party-integration 核对本次第三方技术的官方依据并确定接入或修复方案。"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
