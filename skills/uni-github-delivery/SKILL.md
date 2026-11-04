@@ -11,6 +11,7 @@ description: 在接入或维护 GitHub 工程交付配置、CI、仓库设置与
 
 | 任务 | 资料 |
 |---|---|
+| RN 类型、命名、lint、格式与提交门禁的默认标准 | [默认开发检查](references/quality.md)及本技能内配置模板 |
 | 新仓初始化、完整工程接入 | [接入与同步](references/adoption.md)及[远端设置](references/repository.md) |
 | 仅同步模板、检查漂移 | [接入与同步](references/adoption.md) |
 | CI 事件、验证范围、权限与 PR 审查 | [工作流](references/workflows.md) |
@@ -18,6 +19,8 @@ description: 在接入或维护 GitHub 工程交付配置、CI、仓库设置与
 | 首次发布、常规发行或恢复验收 | [发布与恢复](references/release.md) |
 
 已有项目沿用实际工具和发布约定。自带模板适用于明确采用 Yarn、Turbo、release-it 的 RN 库；按是否有原生源码、文档站和既有服务选择配置。其他技术栈使用其已有构建与交付入口，不套用 RN 模板。代码、平台和业务契约从目标工程取得。
+
+RN 新工程默认使用 ESLint、Prettier、严格 TypeScript 和 Husky／lint-staged／commitlint。采用时同步本地提交检查与 CI 全量门禁，检查范围和例外写入项目入口。已有钩子先核对真实消费者与原有检查，不并装两套管理器，也不在替换时丢失分支、原生或提交保护。
 
 ## 单一来源与采用版本
 

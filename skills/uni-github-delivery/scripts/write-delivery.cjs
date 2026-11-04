@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const { inside, managedBlock, features, digest, projectFiles, requiredFiles } = require('../templates/scripts/check-delivery.cjs');
+const { inside, managedBlock, features, digest, projectFiles, requiredFiles, hookProvider } = require('../templates/scripts/check-delivery.cjs');
 const [directory, list, repository] = process.argv.slice(2);
 if (!directory || !list || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository || ''))
   throw new Error('Usage: node write-delivery.cjs target-path managed-list owner/repo');
@@ -9,7 +9,7 @@ const root = fs.realpathSync(directory);
 const target = inside(root, '.github/delivery.json');
 const previous = fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, 'utf8')) : {};
 const adopted = { organization: fs.existsSync(inside(root, '.github/organization.json')),
-  prAgent: fs.existsSync(inside(root, '.github/workflows/pr-agent.yml')) };
+  prAgent: fs.existsSync(inside(root, '.github/workflows/pr-agent.yml')), hooks: hookProvider(root) };
 const files = Object.fromEntries([...new Set(fs.readFileSync(list, 'utf8').trim().split('\n').filter(Boolean))]
   .sort().map(relative => [relative, digest(fs.readFileSync(inside(root, relative)))]));
 const sourceRoot = path.resolve(__dirname, '..');

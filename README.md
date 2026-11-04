@@ -82,6 +82,10 @@ npx skills update -g uni-code-organization uni-rn-dev \
 
 维护脚本回归使用 `python3 -m unittest discover -s tests -v`，配置测试只使用合成配置，不读取真实凭据。`python -m scripts.validate_repository` 另核对插件清单、版本、仓内入口和已采用发布工具；交付工具的完整检查继续运行 `bash skills/uni-github-delivery/scripts/validate.sh`。
 
+RN 默认开发检查及配置模板以 `uni-rn-dev/references/quality.md` 和 `uni-rn-dev/templates/quality/` 为维护源；修改后运行 `python scripts/sync_rn_quality.py`，同步到 RN 库和 GitHub 交付技能的独立副本，再用 `--check` 核对。消费者无需安装其他技能，也不读取技能仓根目录脚本。质量模板按目标工程合并采用，不覆盖已有工具链、规则和有效例外，不自动迁移其他仓库。
+
+模板的真实工具回归使用 `npm ci --prefix tests/fixtures/rn-quality --ignore-scripts --no-audit --no-fund` 安装锁定的隔离工具，再运行 `node --test tests/rn-quality.test.cjs`。覆盖规则正反例、库声明输出、格式及实际提交钩子的拦截、放行和部分暂存保护；这些结果不替代 RN 应用构建或设备验收。
+
 使用[评测任务](evals/cases.md)检查实际输出、独立使用和任务边界，再核对格式、相对引用及插件清单。行为运行记录放在仓库外；计划和设计保留在 `docs/`，不进入技能默认上下文。
 
 [RN 平台独立使用](evals/rn-platform-ownership.md)覆盖 iOS 安装调试和变更验证范围，核对通用流程不依赖企业技能。

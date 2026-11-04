@@ -19,7 +19,7 @@
 #   - 更新受管文件;采用记录 projectFiles 中已声明的项目专用工作流保留,仍核对摘要:
 #       .github/workflows/{ci,release,pr-title}.yml;PR Agent 工作流按项目采用情况选择
 #       .github/actions/setup/action.yml
-#       lefthook.yml
+#       Git 钩子按已采用入口保留；新工程默认创建 Husky 入口。
 #       .github/ISSUE_TEMPLATE/{bug_report,config}.yml
 #   - 仅移除目标工程 .github/organization.json 的 obsoleteFiles 明确列出的停用自动化。
 #   - marker 级覆盖(共享 Agent bootstrap,保留仓库特有规则):
@@ -100,6 +100,7 @@ if [[ -d "$TARGET/website" ]]; then HAS_WEBSITE=true; fi
 # 只看库本体的 android/src + ios/(crnl 布局下 example app 的 native 在 example/ 下,不会误命中)。
 # 判据用源码而非 *.podspec:design 纯 JS 但可能有壳 podspec,而 native lint 只对真有 .kt/.mm 的仓有意义。
 HAS_NATIVE_SRC="$(node -e 'process.stdout.write(String(require(process.argv[1]).features(process.argv[2]).native))' "$TEMPLATES_DIR/scripts/check-delivery.cjs" "$TARGET")"
+HOOK_PROVIDER="$(node -e 'process.stdout.write(require(process.argv[1]).hookProvider(process.argv[2]))' "$TEMPLATES_DIR/scripts/check-delivery.cjs" "$TARGET")"
 
 echo "→ 同步 templates → $REPO"
 echo "  target     : $TARGET"
@@ -216,7 +217,19 @@ if $PR_AGENT || [[ -f "$TARGET/.github/workflows/pr-agent.yml" ]]; then
   render workflows/pr-agent.yml .github/workflows/pr-agent.yml
   render workflows/pr-agent-reusable.yml .github/workflows/pr-agent-reusable.yml
 fi
-render lefthook.yml                           lefthook.yml
+if [[ "$HOOK_PROVIDER" == husky ]]; then
+  render_if_absent hooks/pre-commit .husky/pre-commit
+  render_if_absent hooks/commit-msg .husky/commit-msg
+  printf '%s\n' .husky/pre-commit .husky/commit-msg >> "$MANAGED_FILES"
+  for tool in lint-staged commitlint; do
+    if ! node -e 'process.exit(require(process.argv[1]).hasToolConfig(process.argv[2], process.argv[3]) ? 0 : 1)' "$TEMPLATES_DIR/scripts/check-delivery.cjs" "$TARGET" "$tool"; then
+      render_if_absent "quality/$tool.config.cjs" "$tool.config.cjs"
+    fi
+  done
+else
+  # 已有 Lefthook 可能包含分支、原生和提交保护；升级规则不覆盖其自有接线。
+  printf '%s\n' lefthook.yml >> "$MANAGED_FILES"
+fi
 render_if_absent SECURITY.md                  SECURITY.md
 render ISSUE_TEMPLATE/bug_report.yml          .github/ISSUE_TEMPLATE/bug_report.yml
 render ISSUE_TEMPLATE/config.yml              .github/ISSUE_TEMPLATE/config.yml
@@ -309,7 +322,7 @@ echo ""
 #   release.yml 的 `npx release-it`(npm OIDC publish) → release-it 配置 + npm.skipChecks + conventional-changelog plugin
 # 同步时校验这些运行依赖,缺失则报告失败,不改写项目 package.json。
 echo "→ [4b] 校验 package.json 的 workflow 依赖配置"
-if ! node -e 'const fs=require("fs"); const {dependencies}=require(process.argv[1]); dependencies(JSON.parse(fs.readFileSync(process.argv[2])))' "$TEMPLATES_DIR/scripts/check-delivery.cjs" "$TARGET/package.json"; then
+if ! node -e 'const fs=require("fs"); const {dependencies}=require(process.argv[1]); dependencies(JSON.parse(fs.readFileSync(process.argv[2])),process.argv[3])' "$TEMPLATES_DIR/scripts/check-delivery.cjs" "$TARGET/package.json" "$HOOK_PROVIDER"; then
   DIFFERENCES=$((DIFFERENCES + 1))
 fi
 echo ""

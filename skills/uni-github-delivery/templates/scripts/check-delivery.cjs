@@ -8,7 +8,7 @@ const END = '<!-- END GITHUB DELIVERY STANDARD -->';
 const REQUIRED = ['.github/workflows/ci.yml', '.github/workflows/release.yml', '.github/workflows/pr-title.yml',
   '.github/scripts/check-library.cjs', '.github/scripts/check-delivery.cjs', '.github/scripts/organization.cjs',
   '.github/actions/setup/action.yml', '.github/actions/changes/action.yml', '.github/actions/changes/classify-package.cjs',
-  'lefthook.yml', '.github/ISSUE_TEMPLATE/bug_report.yml', '.github/ISSUE_TEMPLATE/config.yml'];
+  '.github/ISSUE_TEMPLATE/bug_report.yml', '.github/ISSUE_TEMPLATE/config.yml'];
 const digest = value => createHash('sha256').update(value).digest('hex');
 
 function inside(root, relative) {
@@ -33,10 +33,43 @@ function managedBlock(text) {
   if (begins.length !== 1 || ends.length !== 1 || begins[0] >= ends[0]) throw new Error('Invalid AGENTS.md managed block');
   return lines.slice(begins[0], ends[0] + 1).join('\n');
 }
-function dependencies(pkg) {
+function dependencies(pkg, hooks) {
   if (!pkg.devDependencies?.turbo) throw new Error('Missing workflow dependency: turbo');
   if (pkg['release-it']?.npm?.skipChecks !== true) throw new Error('Missing release-it.npm.skipChecks');
   if (!pkg.devDependencies?.['@release-it/conventional-changelog']) throw new Error('Missing @release-it/conventional-changelog');
+  if (hooks) {
+    for (const name of ['lint', 'typecheck', 'check:format']) {
+      if (!pkg.scripts?.[name]?.trim()) throw new Error(`Missing quality script: ${name}`);
+    }
+  }
+  if (hooks === 'husky') {
+    for (const name of ['prepare', 'lint:staged', 'commitlint']) {
+      if (!pkg.scripts?.[name]?.trim()) throw new Error(`Missing Husky adoption script: ${name}`);
+    }
+    for (const name of ['husky', 'lint-staged', '@commitlint/cli', '@commitlint/config-conventional']) {
+      if (!pkg.devDependencies?.[name]) throw new Error(`Missing hook dependency: ${name}`);
+    }
+  }
+}
+
+function hookProvider(root, adopted) {
+  const receiptPath = inside(root, '.github/delivery.json');
+  const receipt = adopted || (fs.existsSync(receiptPath) ? JSON.parse(fs.readFileSync(receiptPath, 'utf8')) : {});
+  if (receipt.hooks !== undefined) {
+    if (!['husky', 'lefthook'].includes(receipt.hooks)) throw new Error('Unsupported adopted Git hooks');
+    return receipt.hooks;
+  }
+  const legacy = fs.existsSync(inside(root, 'lefthook.yml'));
+  const husky = fs.existsSync(inside(root, '.husky/pre-commit'));
+  if (legacy && husky) throw new Error('Multiple Git hook managers found; inspect the active hooks before adopting');
+  return legacy ? 'lefthook' : 'husky';
+}
+
+function hasToolConfig(root, tool) {
+  const pkg = JSON.parse(fs.readFileSync(inside(root, 'package.json'), 'utf8'));
+  const rc = tool === 'lint-staged' ? '.lintstagedrc' : '.commitlintrc';
+  return pkg[tool] !== undefined || /--config(?:\s|=)/.test(pkg.scripts?.[tool === 'lint-staged' ? 'lint:staged' : tool] || '')
+    || fs.readdirSync(root).some(file => file === rc || file.startsWith(`${rc}.`) || file.startsWith(`${tool}.config.`));
 }
 function projectFiles(value = []) {
   const allowed = new Set(['ci', 'release', 'deploy-docs', 'native-lint', 'nightly-build-check'].map(name => `.github/workflows/${name}.yml`));
@@ -50,6 +83,7 @@ function customBuilder(text) {
 }
 function requiredFiles(root, adopted) {
   const result = [...REQUIRED];
+  result.push(...(hookProvider(root, adopted) === 'lefthook' ? ['lefthook.yml'] : ['.husky/pre-commit', '.husky/commit-msg']));
   if (adopted.organization) result.push('.github/organization.json');
   const state = features(root);
   if (adopted.requiredChecks?.some(name => ['lint-cpp', 'lint-kotlin'].includes(name))) result.push('.github/workflows/native-lint.yml', '.github/workflows/nightly-build-check.yml', '.clang-format');
@@ -98,7 +132,7 @@ function checkDelivery(directory = '.') {
   const pkg = JSON.parse(fs.readFileSync(inside(root, 'package.json'), 'utf8'));
   if (pkg.name !== receipt.packageName) throw new Error('Package identity differs from adopted delivery standard');
   if (JSON.stringify(features(root)) !== JSON.stringify(receipt.features)) throw new Error('Project structure changed; synchronize applicable templates');
-  dependencies(pkg);
+  dependencies(pkg, receipt.hooks);
   const { readOrganization, validateIdentity } = require('./organization.cjs');
   const organization = readOrganization(root, receipt.repository);
   if (!!organization !== receipt.organization) throw new Error('Organization adoption differs from receipt');
@@ -106,7 +140,7 @@ function checkDelivery(directory = '.') {
   for (const relative of organization?.obsoleteFiles || []) if (fs.existsSync(inside(root, relative))) throw new Error(`Obsolete automation: ${relative}`);
   return { root, receipt };
 }
-module.exports = { inside, managedBlock, dependencies, features, digest, checkDelivery, projectFiles, customBuilder, requiredFiles };
+module.exports = { inside, managedBlock, dependencies, features, digest, checkDelivery, projectFiles, customBuilder, requiredFiles, hookProvider, hasToolConfig };
 if (require.main === module) {
   Promise.resolve().then(async () => {
     const [directory = '.', ...extra] = process.argv.slice(2);

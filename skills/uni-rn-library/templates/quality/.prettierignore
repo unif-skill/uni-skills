@@ -1,0 +1,5 @@
+node_modules/
+coverage/
+android/
+ios/
+# 其他已确认的生成文件与独立工程，在采用时按实际路径补充。

@@ -12,7 +12,10 @@ function fixture(t) {
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({
     name: '@unif/react-native-fixture', version: '0.1.0', private: true,
     repository: 'https://github.com/example/react-native-fixture', homepage: 'https://example.github.io/react-native-fixture/',
-    devDependencies: { turbo: '1', '@release-it/conventional-changelog': '1' },
+    scripts: { lint: 'eslint . --max-warnings=0', typecheck: 'tsc --noEmit', 'check:format': 'prettier --check .',
+      'lint:staged': 'lint-staged', commitlint: 'commitlint', prepare: 'husky' },
+    devDependencies: { turbo: '1', '@release-it/conventional-changelog': '1', husky: '9.1.7',
+      'lint-staged': '16.4.0', '@commitlint/cli': '21.2.4', '@commitlint/config-conventional': '21.2.4' },
     'release-it': { npm: { publish: true, skipChecks: true } },
   }));
   return root;

@@ -43,6 +43,12 @@ jobs:
           else
             python -m scripts.validate_repository
           fi
+      - name: Verify self-contained RN quality copies
+        run: python scripts/sync_rn_quality.py --check
+      - name: Install RN quality validation tools
+        run: npm ci --prefix tests/fixtures/rn-quality --ignore-scripts --no-audit --no-fund
+      - name: Verify RN rules and real commit hooks
+        run: node --test tests/rn-quality.test.cjs
       - name: Validate delivery implementation
         run: bash skills/uni-github-delivery/scripts/validate.sh
 

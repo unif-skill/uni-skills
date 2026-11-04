@@ -1,0 +1,32 @@
+{
+  "name": "uni-rn-quality-validation",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.29.7",
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
+    "@eslint/compat": "2.1.1",
+    "@react-native/babel-preset": "0.88.1",
+    "@react-native/eslint-config": "0.88.1",
+    "@types/jest": "30.0.0",
+    "@types/react": "19.3.0",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "eslint": "9.39.5",
+    "globals": "17.13.0",
+    "husky": "9.1.7",
+    "jest": "30.5.2",
+    "lint-staged": "16.4.0",
+    "prettier": "3.9.10",
+    "react": "19.3.1",
+    "typescript": "npm:@typescript/typescript6@6.0.2"
+  },
+  "overrides": {
+    "@react-native/eslint-config": {
+      "eslint-plugin-ft-flow": "3.0.11"
+    }
+  }
+}

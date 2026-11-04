@@ -6,7 +6,7 @@ name: PR Title
 #
 # 为什么单独守这道关:repo 走 squash merge,squash commit 的 message 默认取 PR 标题
 # 并作为唯一 commit 进 main;而 release-it 用 conventional-changelog 扫 commit message
-# 决定 bump 类型 + 写 CHANGELOG。本地 commitlint(lefthook commit-msg)只管本地 commit
+# 决定 bump 类型 + 写 CHANGELOG。本地 commit-msg 中的 commitlint 只管本地 commit
 # —— squash 会把它们压扁丢弃,最终进 main 的 message 是 PR 标题,commitlint 够不着。
 # 标题不规范(如 "Fix/website xxx")会让 release-it 漏判版本 / changelog 缺条。
 #

@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "prepare": "husky",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "check:format": "prettier --check \"**/*.{js,jsx,ts,tsx,mjs,cjs}\"",
+    "lint:staged": "lint-staged",
+    "commitlint": "commitlint"
+  }
+}

@@ -131,6 +131,7 @@ jobs:
       - name: Verify
         run: |
           yarn lint
+          yarn check:format
           yarn typecheck
           yarn test --maxWorkers=2
           yarn prepare

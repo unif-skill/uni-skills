@@ -13,7 +13,10 @@ function fixture(t) {
     homepage: 'https://example.github.io/widget/', repository: 'https://github.com/example/widget',
     license: 'MIT', private: true, files: ['lib'], main: 'lib/index.js', types: 'lib/index.d.ts',
     exports: { '.': { types: './lib/index.d.ts', default: './lib/index.js' } },
-    devDependencies: { turbo: '1', '@release-it/conventional-changelog': '1' },
+    scripts: { lint: 'eslint . --max-warnings=0', typecheck: 'tsc --noEmit', 'check:format': 'prettier --check .',
+      'lint:staged': 'lint-staged', commitlint: 'commitlint', prepare: 'husky' },
+    devDependencies: { turbo: '1', '@release-it/conventional-changelog': '1', husky: '9.1.7',
+      'lint-staged': '16.4.0', '@commitlint/cli': '21.2.4', '@commitlint/config-conventional': '21.2.4' },
     'release-it': { npm: { publish: true, skipChecks: true } },
   }));
   fs.writeFileSync(path.join(root, 'README.md'), '# Widget\n');
@@ -39,6 +42,10 @@ test('new non-Unif library adopts self-contained CI without enabling PR model se
   assert.match(ci, /node \.github\/scripts\/check-delivery\.cjs/);
   assert.doesNotMatch(ci, /unif-design\/\.github|Checkout organization standards/);
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/pr-agent.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, 'lefthook.yml')), false);
+  assert.match(fs.readFileSync(path.join(root, '.husky/pre-commit'), 'utf8'), /yarn lint:staged/);
+  assert.match(fs.readFileSync(path.join(root, '.husky/commit-msg'), 'utf8'), /commitlint --edit/);
+  assert.match(ci, /yarn check:format/);
   const before = snapshot(root);
   ok(sync(root, '--check'));
   assert.deepEqual(snapshot(root), before);
@@ -66,6 +73,62 @@ test('offline checker preserves drift, adopted obsolete automation and dependenc
   delete pkg.devDependencies.turbo;
   fs.writeFileSync(pkgPath, JSON.stringify(pkg));
   assert.match(verify(root).stderr, /turbo/);
+});
+
+test('existing Lefthook guards remain intact and Husky is not added', t => {
+  const root = fixture(t);
+  const guards = 'pre-commit:\n  commands:\n    branch-and-native:\n      run: node scripts/project-guards.cjs\n';
+  fs.writeFileSync(path.join(root, 'lefthook.yml'), guards);
+  ok(sync(root));
+  assert.equal(fs.readFileSync(path.join(root, 'lefthook.yml'), 'utf8'), guards);
+  assert.equal(fs.existsSync(path.join(root, '.husky')), false);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root, '.github/delivery.json'))).hooks, 'lefthook');
+  ok(sync(root, '--check'));
+});
+
+test('existing Husky tasks and inline commit conventions are preserved', t => {
+  const root = fixture(t);
+  fs.mkdirSync(path.join(root, '.husky'));
+  const preCommit = 'node scripts/branch-guard.cjs\nyarn lint:staged\nyarn native:check\n';
+  fs.writeFileSync(path.join(root, '.husky/pre-commit'), preCommit);
+  const pkgPath = path.join(root, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath));
+  pkg.scripts.prepare = 'bob build && husky';
+  pkg['lint-staged'] = { '*.ts': ['eslint --max-warnings=0', 'prettier --check'] };
+  pkg.commitlint = { extends: ['@commitlint/config-conventional'] };
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg));
+  const originalPackage = fs.readFileSync(pkgPath);
+  ok(sync(root));
+  assert.equal(fs.readFileSync(path.join(root, '.husky/pre-commit'), 'utf8'), preCommit);
+  assert.deepEqual(fs.readFileSync(pkgPath), originalPackage);
+  assert.equal(fs.existsSync(path.join(root, 'lint-staged.config.cjs')), false);
+  assert.equal(fs.existsSync(path.join(root, 'commitlint.config.cjs')), false);
+  ok(sync(root, '--check'));
+});
+
+test('missing quality scripts fail adoption without inventing successful commands', t => {
+  const root = fixture(t);
+  const file = path.join(root, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(file));
+  delete pkg.scripts['check:format'];
+  fs.writeFileSync(file, JSON.stringify(pkg));
+  const before = fs.readFileSync(file);
+  const result = sync(root);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stdout + result.stderr, /Missing quality script: check:format/);
+  assert.deepEqual(fs.readFileSync(file), before);
+});
+
+test('ambiguous hook managers fail before writing project files', t => {
+  const root = fixture(t);
+  fs.mkdirSync(path.join(root, '.husky'));
+  fs.writeFileSync(path.join(root, '.husky/pre-commit'), 'yarn lint:staged\n');
+  fs.writeFileSync(path.join(root, 'lefthook.yml'), 'pre-commit: {}\n');
+  const before = snapshot(root);
+  const result = sync(root);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Multiple Git hook managers/);
+  assert.deepEqual(snapshot(root), before);
 });
 
 test('receipt hashes the managed Agent block and preserves project-owned text', t => {

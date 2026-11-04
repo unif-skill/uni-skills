@@ -8,6 +8,10 @@
 
 采用 RN 模板的新库先具备实际构建、测试、原生宿主和包清单，再同步模板。组织名、包名、Pages 地址从显式 owner/repo 与 package.json 取得，不要求特定 scope 或 react-native- 名称。现有源码、锁文件、发布绑定和项目专用 `.github/ci/` 脚本继续按本库契约维护。
 
+先按[默认开发检查](quality.md)合并规则与脚本：实际 `lint`、`typecheck`、`check:format` 是 CI 前置；新工程默认接入 Husky、lint-staged 和 commitlint，并准备真实的 `prepare`、`lint:staged`、`commitlint` 命令。这里的 Yarn 库模板保留构建型 prepare，追加钩子安装而非覆盖构建。检查实际 Node/RN/ESLint 兼容性并更新锁文件，不能只添加脚本名称。应用或其他包管理器仅采用质量配置，不为使用默认规范引入 Yarn、Turbo 或 release-it。
+
+同步默认创建缺失的 `.husky/pre-commit`、`.husky/commit-msg` 和检查配置；已有 Husky 文件、inline package 配置及自有 lint-staged/commitlint 配置保留。已有 Lefthook 入口沿用其内容，不另装 Husky；默认规则在原管理器中补齐等价检查并验证，切换管理器时另迁移原有守卫。采用记录登记实际 hooks，发现无采用记录的双管理器时先核对真实入口。未知的自定义钩子先人工核实并合并接线，不把模板复制当成迁移完成。
+
 在本技能目录执行：
 
 ```sh
@@ -43,6 +47,8 @@ node .github/scripts/check-delivery.cjs
 该检查无需技能安装或网络下载，核对已采用文件、工作流依赖、包开发元数据、原生/站点结构变化和已停用配置。它不检查远端最新标准，也不替代真实构建、产物与消费者验证。
 
 当前标准标识为 `uni-github-delivery/rn`。旧标识的采用记录通过正常同步迁移；同步保留工程专用文件与 requiredChecks，并同时更新受管校验器及摘要。
+
+Git 钩子按采用工程的真实内容登记摘要；同步保留原文件，检查模式核对漂移。新工程的格式门禁在 CI lint 作业和发布前验证中直接执行；钩子与格式配置变更会触发相应检查。CI 安装跳过 Husky 并将 `HUSKY=0` 保留到后续步骤，避免构建型 prepare 再次安装本地钩子；显式 CI 检查仍须运行。
 
 升级时从新的技能来源重新同步，审查差异并走工程已有 PR 流程。`.github/delivery.json` 与生成文件一起提交，不单独手改摘要以绕过失败。
 

@@ -1,0 +1,48 @@
+# RN 默认开发检查
+
+适用于 React Native 应用、库和运行示例的手写 JS/TS。新工程默认采用 ESLint、Prettier、严格 TypeScript、Husky、lint-staged 和 commitlint；已有工程在本次接入或升级范围内补齐等价检查，保留更严格的有效规则和真实工具链。普通功能修改先遵守项目已经采用的配置，不自动开展全仓工具迁移、格式化或依赖升级。
+
+## 开发前与配置采用
+
+先读项目入口、package.json、锁文件、ESLint/Prettier/TS 配置、Git 钩子和 CI，核对应用、库、example、测试、脚本、生成物及独立文档站的范围。安装包不等于规则或钩子生效；合并后的 ESLint 配置、实际编译器的 `--showConfig`、命令和 Git hooksPath 分别核实。
+
+可采用的配置在 [quality 模板](../templates/quality/)。模板以 CommonJS flat ESLint 配置和 npm 命令为例；合并到本项目现有配置，不并存两份同职责配置。当前示例使用 RN flat 预设、typescript-eslint v8 规则与 Husky v9 接口；先验证本项目 RN、ESLint、解析器、Node 和包管理器的兼容性，再安装兼容版本并更新锁文件。已有 package manager、prepare/postinstall、测试框架和构建命令保留，npm/Yarn/pnpm 的实际命令按当前工具调整。
+
+需要的开发工具包括 ESLint、与 RN 匹配的 `@react-native/eslint-config`、`@eslint/compat`、`globals`、Prettier、项目实际 TypeScript 编译器，以及 Husky、lint-staged、`@commitlint/cli`、`@commitlint/config-conventional`。解析器和插件按 RN 预设的兼容依赖核对，不把模板当成要求所有项目升级至同一个版本；Node 最低版本以实际安装包的 engines 为准。
+
+逐项采用 [ESLint](../templates/quality/eslint.config.cjs)、[格式配置](../templates/quality/prettier.config.cjs)、[暂存检查](../templates/quality/lint-staged.config.cjs)、[提交信息](../templates/quality/commitlint.config.cjs)、[脚本片段](../templates/quality/package.scripts.json)，以及隐藏目录内的 [pre-commit](../templates/quality/.husky/pre-commit) 与 [commit-msg](../templates/quality/.husky/commit-msg)。脚本片段与钩子使用 npm 示例，Yarn/pnpm 采用其实际参数透传语法；不能漏读隐藏文件或覆盖现有构建型 prepare。
+
+## 默认规则
+
+| 类别 | 默认要求 |
+|---|---|
+| 类型 | `strict`；禁止隐式和显式 `any`；保留 `unknown` 表达未知输入，使用前校验或收窄；禁止不安全收窄断言，不用 `as never` 或双重断言绕过类型 |
+| 返回与分支 | 开启 `noImplicitReturns`、`noFallthroughCasesInSwitch`；`allowUnreachableCode`、`allowUnusedLabels` 设为 `false` |
+| 空值与覆盖 | 开启 `noUncheckedIndexedAccess`、`exactOptionalPropertyTypes`、`noImplicitOverride`；缺失、显式 undefined、清空与取消仍按真实契约区分 |
+| 控制流 | 控制语句使用大括号，非空块换行；禁止嵌套三元、重复条件、错误循环方向、遗漏数组回调返回等 |
+| 变量与 Promise | 禁止 `var`，优先 `const`，检查未使用变量；禁止异步 Promise 构造回调、构造回调返回值、finally 覆盖结果等；该组不等于所有异步语义均被证明正确 |
+| React | Hooks 调用和依赖、列表 key、过期 API、直接修改 state 等检查；保留 RN 平台及生命周期差异 |
+| 测试 | 采用 Jest 时开启条件内断言、聚焦测试、无效断言与标题等检查；测试辅助文件可导出；其他测试框架采用其等价规则，不额外安装 Jest |
+| 格式 | Prettier 单引号、尾随逗号 `all`、单参数箭头按需省略括号；与 ESLint 的格式规则消除冲突，警告也按项目零警告门禁处理 |
+| 组织与注释 | 类型、常量、样式及组件按有效文件职责维护；结构检查依据本项目真实边界；注释说明契约、限制、资源责任和非直观顺序，不能靠注释数量证明可维护性 |
+
+TypeScript 质量选项从 [tsconfig.quality.json](../templates/quality/tsconfig.quality.json) 合并；保留框架的 extends、include、paths、jsx、moduleResolution、lib 和 emit 接线。库的声明构建不得被应用的 `tsc --noEmit` 示例覆盖。未使用变量主要由 ESLint 负责；`verbatimModuleSyntax`、文件名大小写兼容性和 JS 类型检查按实际工具链验证，不为凑“全部开启”修改编译模式。
+
+命名默认：普通变量和函数 lowerCamelCase，组件、接口、类型和类 PascalCase，接口不加 I 前缀，Hook 使用 useXxx；固定常量 UPPER_SNAKE_CASE。`const` 运行值不是固定常量。模板按 constants 文件角色强制常量命名，保留 React 构造器、Context、组件参数、SDK 原名导入与未改名解构绑定的必要例外；显式本地别名遵守命名规则。对象和函数的真实业务角色仍需审查，不能以 PascalCase 例外掩盖普通变量命名问题。
+
+模板未包含具体应用的目录边界、协议名称或生成路径。原生源码、生成代码、文档站和测试工具按实际职责单独配置；生成物只改源再生成，不通过扩大忽略范围隐藏手写代码的违规。
+
+## 提交与完整门禁
+
+1. 默认 Husky 管理 Git 钩子，`pre-commit` 运行 lint-staged，依次检查暂存源码的 ESLint 和 Prettier；默认使用检查模式，保留备份和部分暂存保护。`commit-msg` 运行 commitlint，采用 Conventional Commits 与中文说明，type/scope/代码标识保留原文；自动合并、回退、fixup 信息沿用工具默认忽略语义，正文与说明质量由审查确认。
+2. 新接入时接通实际 prepare 和 hooksPath，并验证钩子存在、可执行。已有 Husky/Lefthook/自定义钩子先读实际入口；采用默认工具时迁移原有分支、原生、提交信息等检查，避免并装、覆盖或遗漏。只做增量规则升级且原工具可完整承接时保留它，记录等价接线。
+3. CI 使用同一套规则，显式运行全量结构检查（项目有实际入口时）、类型、ESLint、格式、脚本和业务测试；库另保留构建、声明、打包及消费者检查。默认工作流的 lint 作业应包含格式检查，不能只依赖可被跳过的本地钩子。GitHub/GitLab 均应保留实际检查；CI 的 Husky 安装可用 `HUSKY=0` 跳过，检查作业仍运行。
+4. 统一完整检查命令沿用现有 `check` 或等价入口。新建组合命令只引用真实存在的检查，不写空实现或假设的结构脚本。暂存检查不替代完整检查，源码/自动化/构建/设备/业务验证分别报告。
+
+## 采用验证与旧代码
+
+先用正反例证明规则生效：显式 any、不安全断言、缺少大括号、嵌套三元、非法命名和格式应失败；unknown 收窄、安全类型扩大、固定常量、运行值、组件及协议字段合法用法应通过。再在临时仓库验证钩子的拦截与放行、部分暂存内容及失败恢复，确认工作区和暂存区未被意外改写。
+
+新增规则遇到旧代码错误，报告真实诊断并按已授权范围整改。保留行为、异常、身份、取消、并发和断言语义，不通过关闭规则、扩大豁免、补伪造默认值或弱化测试制造通过；必要且有契约依据的例外说明位置、原因及范围。配置完成、代码达标、远端 CI 和技能安装是不同结果。
+
+官方依据：[RN ESLint 配置](https://github.com/facebook/react-native/tree/main/packages/eslint-config)、[TypeScript 检查选项](https://www.typescriptlang.org/tsconfig/)、[typescript-eslint 命名](https://typescript-eslint.io/rules/naming-convention/)、[不安全断言](https://typescript-eslint.io/rules/no-unsafe-type-assertion/)、[Husky](https://typicode.github.io/husky/get-started.html)、[lint-staged](https://github.com/lint-staged/lint-staged)、[commitlint](https://commitlint.js.org/guides/local-setup.html)。
