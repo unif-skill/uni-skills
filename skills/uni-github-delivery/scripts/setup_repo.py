@@ -8,7 +8,6 @@ from pathlib import Path
 import re
 import subprocess
 import sys
-from urllib.parse import quote
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -143,15 +142,23 @@ def desired_rules(template, current, release_app_id=None):
     return desired
 
 
-def assert_registered_checks(base, branch, required, native):
+def assert_registered_checks(base, branch, required):
+    """从启用工作流的真实运行中核对目标分支的检查名称。"""
     registered = set()
-    workflows = ["ci.yml"] + (["native-lint.yml"] if native else [])
-    for workflow in workflows:
-        runs = api(f"{base}/actions/workflows/{workflow}/runs?branch={quote(branch, safe='')}&per_page=5")
-        for run in runs["workflow_runs"]:
-            registered.update(job["name"] for job in pages(f"{base}/actions/runs/{run['id']}/jobs", "jobs"))
-            if required <= registered:
-                return
+    workflows = {workflow["id"] for workflow in pages(f"{base}/actions/workflows", "workflows")
+                 if workflow.get("state") == "active"}
+    for run in pages(f"{base}/actions/runs", "workflow_runs"):
+        if run.get("workflow_id") not in workflows or not run.get("event"):
+            continue
+        if run["event"] in ("pull_request", "pull_request_target"):
+            # branch 查询和 head_branch 指向运行来源，PR 必须核对 base.ref。
+            if not any((pull.get("base") or {}).get("ref") == branch for pull in run.get("pull_requests") or []):
+                continue
+        elif run.get("head_branch") != branch:
+            continue
+        registered.update(job["name"] for job in pages(f"{base}/actions/runs/{run['id']}/jobs", "jobs"))
+        if required <= registered:
+            return
     raise RuntimeError("CI 尚未注册全部必需检查，未修改远端：" + ", ".join(sorted(required - registered)))
 
 
@@ -173,7 +180,7 @@ def plan(repository, release_app_id=None, organization=None, required_checks=Non
         if rule["type"] == "required_status_checks"
         for check in rule["parameters"]["required_status_checks"]
     }
-    assert_registered_checks(base, repo["default_branch"], required, native)
+    assert_registered_checks(base, repo["default_branch"], required)
 
     changes = []
     desired = organization.get("repositorySettings", {})

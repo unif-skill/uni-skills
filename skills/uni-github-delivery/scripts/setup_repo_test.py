@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.parse import parse_qs
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -45,6 +46,10 @@ class GithubFixture:
         self.checks = list(CHECKS)
         self.native = False
         self.native_checks = []
+        self.workflows = [{"id": 1, "path": ".github/workflows/ci.yml", "state": "active"}]
+        self.runs = [{"id": 10, "workflow_id": 1, "event": "push", "head_branch": "main", "pull_requests": []}]
+        self.jobs = {}
+        self.unreadable = set()
         self.website = False
         self.site = None
         self.ignore_writes = False
@@ -58,6 +63,16 @@ class GithubFixture:
             "schemaVersion": 1, "standard": "uni-github-delivery/rn", "repository": REPOSITORY,
             "requiredChecks": checks,
         }))
+
+    def add_workflow(self, name, checks, *, event="push", head_branch="main", base_branch=None):
+        workflow_id = len(self.workflows) + 100
+        run_id = workflow_id * 10
+        self.workflows.append({"id": workflow_id, "path": f".github/workflows/{name}.yml", "state": "active"})
+        run = {"id": run_id, "workflow_id": workflow_id, "event": event, "head_branch": head_branch,
+               "pull_requests": [{"base": {"ref": base_branch}}] if base_branch is not None else []}
+        self.runs.append(run)
+        self.jobs[run_id] = list(checks)
+        return run
 
     @property
     def writes(self):
@@ -87,6 +102,12 @@ class GithubFixture:
             else:
                 raise AssertionError((endpoint, method, body))
             return None
+        path, _, query = endpoint.partition("?")
+        if path in self.unreadable:
+            raise RuntimeError(f"无法读取 {path}")
+        parameters = parse_qs(query)
+        limit = int(parameters.get("per_page", [100])[0])
+        offset = (int(parameters.get("page", [1])[0]) - 1) * limit
         if endpoint == BASE:
             return copy.deepcopy(self.repo)
         if "/contents/.github/workflows/" in endpoint:
@@ -96,15 +117,21 @@ class GithubFixture:
                 return {"type": "file"}
             assert missing_ok
             return None
-        if "/actions/workflows/ci.yml/runs?" in endpoint:
-            return {"workflow_runs": [{"id": 10}]}
-        if "/actions/workflows/native-lint.yml/runs?" in endpoint:
-            return {"workflow_runs": [{"id": 20}]}
-        if "/actions/runs/10/jobs?" in endpoint:
-            offset = 100 if endpoint.endswith("page=2") else 0
-            return {"jobs": [{"name": name} for name in self.checks[offset:offset + 100]]}
-        if "/actions/runs/20/jobs?" in endpoint:
-            return {"jobs": [{"name": name} for name in self.native_checks]}
+        if path == BASE + "/actions/workflows":
+            workflows = self.workflows + ([{"id": 2, "path": ".github/workflows/native-lint.yml", "state": "active"}] if self.native else [])
+            return {"workflows": copy.deepcopy(workflows[offset:offset + limit])}
+        if path in (BASE + "/actions/runs", BASE + "/actions/workflows/ci.yml/runs", BASE + "/actions/workflows/native-lint.yml/runs"):
+            runs = self.runs + ([{"id": 20, "workflow_id": 2, "event": "push", "head_branch": "main", "pull_requests": []}] if self.native else [])
+            if "/actions/workflows/" in path:
+                workflow_id = 1 if "ci.yml" in path else 2
+                runs = [run for run in runs if run["workflow_id"] == workflow_id]
+            if "branch" in parameters:
+                runs = [run for run in runs if run.get("head_branch") == parameters["branch"][0]]
+            return {"workflow_runs": copy.deepcopy(runs[offset:offset + limit])}
+        if path.startswith(BASE + "/actions/runs/") and path.endswith("/jobs"):
+            run_id = int(path.split("/")[-2])
+            jobs = {10: self.checks, 20: self.native_checks, **self.jobs}[run_id]
+            return {"jobs": [{"name": name} for name in jobs[offset:offset + limit]]}
         if endpoint.startswith(BASE + "/rulesets?"):
             return [] if self.ruleset is None else [{"id": 1, "name": "protect main"}]
         if endpoint == BASE + "/rulesets/1":
@@ -176,6 +203,66 @@ class SetupTests(unittest.TestCase):
             self.assertEqual(self.run_setup(fixture, "--check"), 0)
             self.assertEqual(fixture.ruleset["rules"][3]["parameters"]["required_status_checks"], required)
             self.assertEqual(fixture.writes, [])
+
+    def test_adopted_check_from_another_workflow_is_registered_for_the_default_branch(self):
+        for event in ("push", "pull_request", "pull_request_target"):
+            with self.subTest(event=event):
+                fixture = GithubFixture()
+                fixture.repo["default_branch"] = "release/stable"
+                fixture.runs[0]["head_branch"] = "release/stable"
+                fixture.add_workflow("pr-title", ["pr-title"], event=event,
+                                     head_branch="release/stable" if event == "push" else "topic/title",
+                                     base_branch="release/stable" if event != "push" else None)
+                fixture.save_delivery(CHECKS + ["pr-title"])
+                fixture.ruleset["rules"][3]["parameters"]["required_status_checks"].append({"context": "pr-title"})
+                self.assertEqual(self.run_setup(fixture, "--check"), 0)
+                self.assertEqual(fixture.writes, [])
+
+    def test_pr_source_branch_does_not_prove_the_target_branch_before_writing(self):
+        for event in ("pull_request", "pull_request_target"):
+            for pull_requests in ([{"base": {"ref": "develop"}}], [], [{"base": {}}]):
+                with self.subTest(event=event, pull_requests=pull_requests):
+                    fixture = GithubFixture()
+                    fixture.runs[0].update(event=event, head_branch="main", pull_requests=pull_requests)
+                    fixture.repo["allow_merge_commit"] = True
+                    with self.assertRaisesRegex(RuntimeError, "尚未注册"):
+                        self.run_setup(fixture)
+                    self.assertEqual(fixture.writes, [])
+
+    def test_missing_run_event_cannot_confirm_the_default_branch_before_writing(self):
+        fixture = GithubFixture()
+        del fixture.runs[0]["event"]
+        fixture.repo["allow_merge_commit"] = True
+        with self.assertRaisesRegex(RuntimeError, "尚未注册"):
+            self.run_setup(fixture)
+        self.assertEqual(fixture.writes, [])
+
+    def test_inactive_workflow_runs_cannot_register_required_checks(self):
+        fixture = GithubFixture()
+        fixture.workflows[0]["state"] = "disabled_manually"
+        fixture.repo["allow_merge_commit"] = True
+        with self.assertRaisesRegex(RuntimeError, "尚未注册"):
+            self.run_setup(fixture)
+        self.assertEqual(fixture.writes, [])
+
+    def test_workflows_and_runs_are_paginated_before_rejecting_checks(self):
+        fixture = GithubFixture()
+        fixture.workflows = [{"id": index, "state": "active", "path": f".github/workflows/extra-{index}.yml"}
+                             for index in range(100, 200)] + fixture.workflows
+        fixture.runs = [{"id": index, "workflow_id": 1, "event": "push", "head_branch": "develop", "pull_requests": []}
+                        for index in range(1000, 1100)] + fixture.runs
+        self.assertEqual(self.run_setup(fixture, "--check"), 0)
+        self.assertEqual(fixture.writes, [])
+
+    def test_unreadable_registration_evidence_prevents_every_write(self):
+        for suffix in ("/actions/workflows", "/actions/runs", "/actions/runs/10/jobs"):
+            with self.subTest(endpoint=suffix):
+                fixture = GithubFixture()
+                fixture.unreadable.add(BASE + suffix)
+                fixture.repo["allow_merge_commit"] = True
+                with self.assertRaisesRegex(RuntimeError, "无法读取"):
+                    self.run_setup(fixture)
+                self.assertEqual(fixture.writes, [])
 
     def test_invalid_adopted_checks_stop_before_api_calls(self):
         for checks in [[], "actionlint", ["actionlint", "actionlint"], [123], ["line\nbreak"]]:
