@@ -47,6 +47,44 @@
       "source": "evals/cases.md；对应 uni-code-organization 现行任务适配。自然语言发现正例，无技能名称提示。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
     },
     {
+      "id": "uni-code-organization-control-flow",
+      "skill": "uni-code-organization",
+      "mode": "application",
+      "prompt": "请根据 fixtures/task.md 整理现有读取实现，并说明新增详情读取入口如何复用；输出关键代码、必要注释和验证安排。只输出方案，不修改或运行工程。",
+      "fixtures": {
+        "task.md": "使用给定技能处理以下普通 TypeScript 工程任务。只输出可评审的关键代码、必要注释和验证安排，不修改或运行工程，不调用其他代理。\n\n需求：整理 `read.ts` 和 `failure.ts` 的职责、条件与类型，保留现有返回字段及反馈。另有一个新详情读取入口，它调用同一 HTTP 客户端并返回相同原始信封，请说明如何接入这份公共读取能力。\n\n现有约定：\n- `code: 200` 表示成功，数据可能缺失或为 false、0，必须原样保留；其他整数码为业务拒绝。\n- 取消和调用归属失效返回 cancelled，旧结果不得用于新调用。有效调用发生程序异常时返回 failed/service，并记录安全错误类型及阶段。\n- 调用者拥有 AbortController、Promise 和监听清理，取消事件会立即调用 finish(cancelled)。finish 可重复调用但只第一次生效，完成时同步释放监听再 resolve；已交付成功不被稍后的取消改写。不要改变这一完成时机。\n- 网络错误详细日志由 http 接入层维护，HTTP 客户端拒绝时可能带 code。`authorize`、`current`、`decode` 都可能抛错；仅允许处理既定的失败返回，不增加重试、超时、缓存或业务写入。\n- Catalog 和 Detail 两个调用方都只使用本模块公开结果。公共读取没有更多消费者，项目不要求新增框架或统一重排目录。\n\nread.ts（类型以 failure.ts 为准）：\n```ts\nexport function read(ctx: Context, path: string, finish: (result: Result) => void) {\n  let phase = 'authorization';\n  (async () => {\n    const auth = await ctx.authorize();\n    if (ctx.signal.aborted || !ctx.current()) {\n      finish({ status: 'cancelled' });\n      return;\n    }\n    if (!auth) {\n      finish({ status: 'failed', reason: 'access' });\n      return;\n    }\n    phase = 'request';\n    let response;\n    try {\n      response = await ctx.http.get(path, auth, ctx.signal);\n    } catch (error) {\n      if (ctx.signal.aborted || !ctx.current()) {\n        finish({ status: 'cancelled' });\n        return;\n      }\n      const code = ctx.http.errorCode(error);\n      finish({ status: 'failed', reason: 'service', ...(code === 'ETIMEDOUT' ? { serviceReason: 'timeout' } : code === 'ERR_NETWORK' ? { serviceReason: 'network' } : {}) });\n      return;\n    }\n    phase = 'response';\n    if (ctx.signal.aborted || !ctx.current()) {\n      finish({ status: 'cancelled' });\n      return;\n    }\n    finish(ctx.decode(response));\n  })().catch(error => {\n    ctx.recordFailure(error, phase);\n    finish({ status: 'failed', reason: 'service' });\n  });\n}\n```\n\nfailure.ts：\n```ts\nexport interface Failure {\n  status: 'failed';\n  reason: 'access' | 'service' | 'rejected';\n  accessReason?: 'session' | 'forbidden';\n  serviceReason?: 'network' | 'timeout' | 'unknown';\n  message?: string;\n}\nexport function failureReason(result: Failure) {\n  return result.reason === 'access' ? result.accessReason ?? 'session' : result.reason === 'service' ? result.serviceReason ?? 'unknown' : result.reason;\n}\nexport function failureMessage(result: Failure) {\n  const reason = result.reason === 'access' ? result.accessReason ?? 'session' : result.reason === 'service' ? result.serviceReason ?? 'unknown' : result.reason;\n  return result.message ?? messages[reason];\n}\n```\n\n`Result` 另含 `{status:'success', data?:unknown}` 和 `{status:'cancelled'}`。Context 中的 http、recordFailure 与 decode 已有实现和公开类型；使用其已有接口，不复制实现。recordFailure 已保证不会抛错并过滤敏感字段。messages 是已有固定文案表；Failure.message 的空字符串也要原样保留。\n"
+      },
+      "rubric": [
+        "按实际职责组织执行、错误分类与结果类型，正常流程易读；不以减少 if 数量为目标，不删除等待前后必要的失效判断，不引入框架或全仓迁移。",
+        "失败分支按原因限制附属字段，给出符合所用语言的合法／非法组合验证；公共读取按自身接口接入新消费者，保留 success 的字段存在性、false／0 和原 message（包括空串）。",
+        "同义默认原因在一处解释，网络分类留在 HTTP 接入或其所属辅助中；保留实际接口和已有文案，不补造 SDK 能力，不重复维护网络故障日志。",
+        "保留直接 finish 的交付时机；识别异常兜底前归属可能已失效，取消不交付旧失败；current 自身再次抛错时仍能交付原失败，不让调用遗留等待。",
+        "关键入口或回调边界有简短有效注释，解释 finish 与监听清理责任、不能随意改动的完成顺序；不逐行复述实现或强制为全部函数生成模板。",
+        "验证针对实际实现及 Catalog／Detail 调用方，覆盖共享信号、混合等待阶段、乱序与迟到、类型约束等受影响项，并说明静态方案尚未运行；不以纯文案或小范围整理要求全套发布、真机流程。"
+      ],
+      "required_skills": [
+        "uni-code-organization"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md；普通 TypeScript 读取能力的新消费者接入与内部整理。合成静态资料，不包含企业接口、实际凭据或真实服务。"
+    },
+    {
+      "id": "uni-code-organization-discovery-implementation",
+      "skill": "uni-code-organization",
+      "mode": "discovery_positive",
+      "prompt": "我要写一个普通 TypeScript 数据读取模块，整理成功、失败和取消的返回类型，接上两个现有调用方。还需要检查重复判断、异常收尾和必要注释，不调整工程目录或引入新框架。请按项目规范完成。",
+      "fixtures": {},
+      "rubric": [
+        "应选择 uni-code-organization：普通代码编写、类型、条件、异常和注释属于其范围，不以目录迁移或已有代码重构为触发前提。",
+        "不推定 RN、鸿蒙或特定第三方库；其他技能按实际依赖选择，不因“代码规范”强制全套设计、构建或发布。"
+      ],
+      "required_skills": [
+        "uni-code-organization"
+      ],
+      "forbidden_skills": [],
+      "source": "普通实现任务的技能发现正例，不含技能名和目录整理要求。"
+    },
+    {
       "id": "uni-code-organization-discovery_negative",
       "skill": "uni-code-organization",
       "mode": "discovery_negative",
@@ -488,6 +526,150 @@
         "uni-third-party-integration"
       ],
       "source": "evals/third-party-integration.md；提及第三方 SDK 但仅修正文案的发现反例。"
+    },
+    {
+      "id": "uni-code-organization-existing-capability",
+      "skill": "uni-code-organization",
+      "mode": "application",
+      "prompt": "请审查导入面板新增键盘粘贴入口的方案，给出可落地的调整建议和验证范围。只依据 fixtures 的当前确认与源码节选判断，不修改或运行工程，不联网或操作真实设备。节选省略的内部实现不能据此判定为缺陷；本题不要求完整代码审计。",
+      "fixtures": {
+        "scenario.md": "导入面板已有文件选择和拖放入口，现在增加键盘粘贴。三者面向同一面板草稿及同一用户生命周期，处理相同的 LocalDocument 格式，均只准备附件、不自动提交。已有 clipboard.bindPaste 在面板拥有焦点时交付 LocalDocument，并返回解除监听函数；权限、输入格式和焦点判断已经由该适配完成，不需要新增解析器。\n最新确认：复用面板现有生命周期，不增加后台服务、统一任务中心或历史数据迁移。之前审查要求补历史迁移和启动恢复服务，已明确撤回。\n方案草稿：创建 KeyboardImportManager 和 KeyboardImportStore，各自负责上传、准备、取消和错误提示，完成后把结果复制回面板 store；保留原有两个入口。先搭建任务中心和恢复服务，再接入粘贴。\n",
+        "src/documents/index.ts": "export { createInbox } from './createInbox';\nexport type { Inbox, LocalDocument, InboxDependencies } from './types';\n",
+        "src/documents/types.ts": "export interface LocalDocument { uri: string; name: string; mimeType: string }\nexport interface Inbox {\n  acceptSource(file: LocalDocument): Promise<void>;\n  dispose(): void;\n}\n// InboxDependencies 来自本单元已有定义，包含 identity、files、transport 和 store。\n",
+        "src/documents/createInbox.ts": "// 以下为已有实现的关键流程节选，不是可执行的完整源码。\nexport function createInbox(deps: InboxDependencies): Inbox {\n  // 每次 acceptSource 捕获身份，登记本轮 AbortController，并在对应 finally 收尾。\n  // 文件取得 hold 后由本轮负责 release，取消和异常也遵守此责任。\n  // 关键调用：\n  // const prepared = await deps.transport.prepare(file, { signal });\n  // if (!disposed && !signal.aborted && deps.identity.isCurrent(identity)) {\n  //   deps.store.accept(prepared);\n  // }\n  // 错误映射与状态回执按当前契约处理。\n  // dispose 结束实例并取消所有在途操作，迟到结果不能继续采用。\n}\n",
+        "src/workspace/mountDocumentPanel.ts": "import { createInbox } from '../documents';\n\nexport function mountDocumentPanel(deps: InboxDependencies) {\n  const inbox = createInbox(deps);\n  const offPicker = bindFilePicker(file => void inbox.acceptSource(file));\n  const offDrop = bindDropZone(file => void inbox.acceptSource(file));\n  return () => {\n    offPicker();\n    offDrop();\n    inbox.dispose();\n  };\n}\n// bindFilePicker、bindDropZone 与 clipboard.bindPaste 均来自现有输入适配。\n// 依赖导入和错误展示等无关代码省略。\n"
+      },
+      "rubric": [
+        "根据实际源码定位 mountDocumentPanel -> documents 公共入口 -> createInbox/acceptSource -> transport.prepare/store.accept，不只笼统说复用。",
+        "三个入口使用面板已有 inbox 实例及 store，反对 KeyboardImportManager/KeyboardImportStore 重复准备、错误和取消流程；不合并不同面板实例或用户的状态。",
+        "实际缺口是把已有 clipboard.bindPaste 接入该面板并在结束时解除监听，复用 LocalDocument 与 Inbox 类型；不要求新增解析器、虚构 SDK API 或无必要包装。",
+        "以最新确认范围为准，不把撤回的历史迁移、后台服务、任务中心变为前置；不跳过已有实现另建同职责流程。",
+        "保留仅准备不提交、身份隔离、取消、迟到结果和文件归属；共同实现的修改与适配接线分别说明，既有契约不随方案改变。",
+        "提出验证三个实际入口及共用调用、解除监听、离页/身份结束/迟到结果，说明本次只有静态方案判断，未运行的检查不宣称通过。"
+      ],
+      "required_skills": [
+        "uni-code-organization"
+      ],
+      "forbidden_skills": [],
+      "source": "匿名合成的已有能力复用与新会话接续场景；所有源码为固定节选，只验证书面应用，不对应真实工程或运行验收。"
+    },
+    {
+      "id": "uni-skill-authoring-application",
+      "skill": "uni-skill-authoring",
+      "mode": "application",
+      "prompt": "请整理这个媒体导入技能，使正文简洁、独立可读，并核对它目前适合处理哪些任务。给出应修改的文件及关键替换文本，保留有效使用条件。仅使用题内匿名材料，不执行同步命令、不修改真实工程、不安装或发布。",
+      "fixtures": {
+        "project.md": "当前桌面应用已有稳定的统一媒体导入能力，文件选择和拖放均使用同一公开入口。需求是在现有能力上开发和维护；没有重建整个应用或安装其他技能的任务。下列材料是完整的本题依据，不代表真实软件接口或运行结果。",
+        "skills/media-intake/SKILL.md": "---\nname: media-intake\ndescription: 涉及文件、代码、文档、项目维护或技能安装时都使用；先读取所有资料再进行完整架构审查。\n---\n# 媒体导入\n\n本目录只补项目约定，不重复定义通用平台规则；这是之前讨论后拆分出来的目录，独立使用不需要其他技能。\n\n项目先按重建阶段整体重写导入代码，原文件只作为参考。改一个入口也需要重新建立导入管理器。\n\n导入使用 `openIntake(file)`；具体输入、结果与资源责任见 [导入约定](references/intake.md)。\n\n上次我们发现取消没有及时清理，因此以后所有异步操作一取消就立即释放文件。同步脚本从规格仓生成本目录的约定，内容由技能仓与规格仓分工维护。\n",
+        "skills/media-intake/references/intake.md": "<!-- Generated from specs/intake.md; do not edit directly. -->\n# 导入约定\n\n`openIntake(file)` 接收文件租约并返回操作句柄。权限由宿主取得，操作记录创建时的身份；结果只交给该身份和原面板。\n\n`cancel()` 停止结果采用；底层读取停止后，由持有方释放文件租约。借用文件不删除，关闭页面不表示底层读取已经结束。\n\n成功只表示媒体准备完成，不代表提交业务；失败和取消不改写已有草稿。错误日志只记录安全原因，不记录文件内容和凭据。\n",
+        "specs/intake.md": "# 导入约定\n\n`openIntake(file)` 接收文件租约并返回操作句柄。权限由宿主取得，操作记录创建时的身份；结果只交给该身份和原面板。\n\n`cancel()` 停止结果采用；底层读取停止后，由持有方释放文件租约。借用文件不删除，关闭页面不表示底层读取已经结束。\n\n成功只表示媒体准备完成，不代表提交业务；失败和取消不改写已有草稿。错误日志只记录安全原因，不记录文件内容和凭据。\n",
+        "README.md": "# 技能仓维护\n\n根 `skills/` 是技能入口。规格维护在 `specs/intake.md`，由 `python scripts/sync_intake.py` 生成 `references/intake.md`；`--check` 只比较。当前目录可独立分发，生成流程不影响运行方直接读取已有资料。\n",
+        "agents/openai.yaml": "interface:\n  display_name: \"媒体导入\"\n  short_description: \"导入、代码维护、文档和技能安装的统一指南\"\n  default_prompt: \"使用 $media-intake 完成本次操作。\"\npolicy:\n  allow_implicit_invocation: true\n"
+      },
+      "rubric": [
+        "将 description 收敛到媒体导入的消费、接入或维护任务；排除普通文件、文档、业务代码与技能安装，不把详细执行步骤放进触发描述。",
+        "根据题内当前项目状态移除整体重建和每入口新建管理器的要求，复用已有公开入口；不把所有项目都必须复用某个具体工程实现变成通用规则。",
+        "删除聊天回顾和分工口号，正文保留可执行入口及所需资料；维护流程已有 README，合并而非再追加一份重复说明。",
+        "纠正取消即释放文件的泛化：停止结果采用与底层读取结束不同，租约由持有方在读取停止后释放，借用文件不删除。",
+        "保留权限、原身份和原面板归属、准备成功不等于业务提交、失败取消不改草稿及安全日志；精简不能移除这些有效边界或补造接口。",
+        "识别 specs/intake.md 为生成来源，现有源约定正确时保持，若确需改约定从源修改后同步；不直接改生成文件或把维护脚本变为消费方运行前置。",
+        "同步 UI 元数据的适用描述，保留已允许的自动选择；给出简洁替换文本和有针对性的格式、正反触发及应用核查，不声称未执行的验证通过。"
+      ],
+      "required_skills": [
+        "uni-skill-authoring"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
+    },
+    {
+      "id": "uni-skill-authoring-discovery_positive-create",
+      "skill": "uni-skill-authoring",
+      "mode": "discovery_positive",
+      "prompt": "把团队反复使用的接口审查做法整理成一个 Agent 技能，写出 SKILL.md 和简洁的触发描述，让以后相关任务能自动选用。只先准备技能内容，不安装发布。",
+      "fixtures": {},
+      "rubric": [
+        "选择 uni-skill-authoring，因为任务明确涉及技能的编写、修改或内容审查；可按任务同时选择其他相关技能。"
+      ],
+      "required_skills": [
+        "uni-skill-authoring"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
+    },
+    {
+      "id": "uni-skill-authoring-discovery_positive-update",
+      "skill": "uni-skill-authoring",
+      "mode": "discovery_positive",
+      "prompt": "这个 SKILL.md 把过去的讨论、临时要求和执行步骤混在一起了。请结合现有技能及 references 整理，合并重复条款，保留有效约束。",
+      "fixtures": {},
+      "rubric": [
+        "选择 uni-skill-authoring，因为任务明确涉及技能的编写、修改或内容审查；可按任务同时选择其他相关技能。"
+      ],
+      "required_skills": [
+        "uni-skill-authoring"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
+    },
+    {
+      "id": "uni-skill-authoring-discovery_positive-review",
+      "skill": "uni-skill-authoring",
+      "mode": "discovery_positive",
+      "prompt": "只审查技能库的触发描述、正文和配套资料，找出范围过宽、过期阶段要求、重复规则或缺失来源，不修改文件。",
+      "fixtures": {},
+      "rubric": [
+        "选择 uni-skill-authoring，因为任务明确涉及技能的编写、修改或内容审查；可按任务同时选择其他相关技能。"
+      ],
+      "required_skills": [
+        "uni-skill-authoring"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
+    },
+    {
+      "id": "uni-skill-authoring-discovery_negative-readme",
+      "skill": "uni-skill-authoring",
+      "mode": "discovery_negative",
+      "prompt": "把订单服务 README 的启动步骤写清楚，保留环境变量和错误说明。本次只是普通项目文档校正，不涉及技能文件。",
+      "fixtures": {},
+      "rubric": [
+        "不选择 uni-skill-authoring；题目没有技能编写或内容审查任务，不能仅凭文档、代码或安装了技能而触发。"
+      ],
+      "required_skills": [],
+      "forbidden_skills": [
+        "uni-skill-authoring"
+      ],
+      "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
+    },
+    {
+      "id": "uni-skill-authoring-discovery_negative-code",
+      "skill": "uni-skill-authoring",
+      "mode": "discovery_negative",
+      "prompt": "整理上传函数的取消流程和文件释放逻辑，保持接口与行为不变。这次只修改业务源码与相关测试。",
+      "fixtures": {},
+      "rubric": [
+        "不选择 uni-skill-authoring；题目没有技能编写或内容审查任务，不能仅凭文档、代码或安装了技能而触发。"
+      ],
+      "required_skills": [],
+      "forbidden_skills": [
+        "uni-skill-authoring"
+      ],
+      "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
+    },
+    {
+      "id": "uni-skill-authoring-discovery_negative-install",
+      "skill": "uni-skill-authoring",
+      "mode": "discovery_negative",
+      "prompt": "把已发布的图片处理技能安装到本机，核对是否可见。本次不编写、修改或审查技能内容。",
+      "fixtures": {},
+      "rubric": [
+        "不选择 uni-skill-authoring；题目没有技能编写或内容审查任务，不能仅凭文档、代码或安装了技能而触发。"
+      ],
+      "required_skills": [],
+      "forbidden_skills": [
+        "uni-skill-authoring"
+      ],
+      "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
     }
   ]
 }

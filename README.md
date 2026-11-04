@@ -1,19 +1,20 @@
 # Uni Skills
 
-通用工程技能集合，提供第三方技术接入、代码组织、React Native 与 HarmonyOS 开发、库工程、文档规范和 GitHub 交付工具。每个技能独立维护，也可以按任务组合使用。
+通用工程技能集合，提供第三方技术接入、代码组织、React Native 与 HarmonyOS 开发、库工程、文档规范、技能编写和 GitHub 交付工具。
 
 ## 技能
 
 | 技能 | 用途 |
 |---|---|
 | [uni-third-party-integration](skills/uni-third-party-integration/SKILL.md) | 第三方库、框架与 SDK 的设计、接入、封装、升级评估及排障 |
-| [uni-code-organization](skills/uni-code-organization/SKILL.md) | 前端、RN、鸿蒙、后端等工程的目录归属、源码与配置文件、环境变体、命名与公共入口 |
+| [uni-code-organization](skills/uni-code-organization/SKILL.md) | 跨语言代码开发、维护和审查中的职责、条件、类型、依赖、异步、注释及工程配置 |
 | [uni-rn-dev](skills/uni-rn-dev/SKILL.md) | RN 组件、Hook、样式、平台接入与 iOS 安装调试 |
 | [uni-rn-library](skills/uni-rn-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
 | [uni-harmony-dev](skills/uni-harmony-dev/SKILL.md) | API 26／V2 下的 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
 | [uni-harmony-library](skills/uni-harmony-library/SKILL.md) | API 26 原生 HAR 库公共入口、依赖资源、打包发布与真实宿主示例 |
 | [uni-github-delivery](skills/uni-github-delivery/SKILL.md) | GitHub CI、仓库保护、工程模板同步、发布与恢复检查 |
 | [uni-documentation](skills/uni-documentation/SKILL.md) | 各类工程的文档编写、组织与审校，以及文档站生成、构建和验证 |
+| [uni-skill-authoring](skills/uni-skill-authoring/SKILL.md) | 技能内容编写与审校、适用范围、触发描述和配套资料维护 |
 
 技能按实际任务独立发现和使用，不要求相互安装或调用。GitHub 交付的共用机制在 uni-github-delivery 维护；组织约定由所属组织提供，接入时落实到目标工程配置，通用工具不查找其他技能的安装目录。
 
@@ -68,7 +69,7 @@ npx skills add unif-skill/uni-skills -g \
 ```sh
 npx skills update -g uni-code-organization uni-rn-dev \
   uni-rn-library uni-harmony-dev uni-harmony-library \
-  uni-documentation uni-github-delivery uni-third-party-integration
+  uni-documentation uni-skill-authoring uni-github-delivery uni-third-party-integration
 ```
 
 此命令更新已安装的共享副本；首次添加新技能时重新执行上方安装命令。Codex 插件按插件机制单独更新，不会自动改写共享目录。两种入口并存时分别更新并核对同一版本的内容，继续禁用 Codex 的重复共享入口。安装或更新后，在目标工具中确认技能可见；旧会话仍使用缓存时，重新打开会话。
@@ -76,6 +77,8 @@ npx skills update -g uni-code-organization uni-rn-dev \
 ## 维护
 
 修改所属技能及其引用资料，保持触发范围明确。通用规则不绑定某个企业、应用、固定包名或个人路径；项目已有有效约定与工具要求优先。
+
+技能正文保留任务判断、操作、必要来源和验证；技能仓的维护分工、生成和分发流程放在本 README 或对应维护入口。讨论过程不直接写入技能，只保留必要且可复用的结论。涉及操作的版本、授权、平台和资源限制仍在对应步骤说明。
 
 维护脚本回归使用 `python3 -m unittest discover -s tests -v`，配置测试只使用合成配置，不读取真实凭据。`python -m scripts.validate_repository` 另核对插件清单、版本、仓内入口和已采用发布工具；交付工具的完整检查继续运行 `bash skills/uni-github-delivery/scripts/validate.sh`。
 

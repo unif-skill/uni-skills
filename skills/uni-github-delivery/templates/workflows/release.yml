@@ -9,8 +9,8 @@
 #   纯 docs/website/依赖变更不该触发发版;要发依赖升级版走手动 workflow_dispatch。
 name: Release
 
-# 手动触发的发版工作流 —— 在 GitHub Actions 页面点 "Run workflow" 选版本类型即可。
-# 内部跑 `release-it --ci`:bump 版本号 → 生成 changelog → git commit + tag →
+# main 指定路径的 push 或手动 workflow_dispatch 触发；手动可选择仅核验已发布版本。
+# 发布时运行 `release-it --ci`:bump 版本号 → 生成 changelog → git commit + tag →
 # `npm publish`(走 npm Trusted Publishing / OIDC)→ 创建 GitHub Release。
 #
 # 两套凭据,各管一段:
@@ -23,10 +23,8 @@ name: Release
 #      `chore: release X.Y.Z` commit 能合法推回受保护的 main。
 #      前置:repo variable RELEASE_APP_ID + secret RELEASE_APP_PRIVATE_KEY + App 进 bypass list。
 #
-# 防自触发死循环(关键):release-it 推回 main 的 release commit 改了 package.json,会命中下面
-# 的 paths 再次触发本工作流 → 无限发版。两道防线:
-#   1. release commit message 带 [skip ci](见 package.json#release-it.git.commitMessage)→ push 被 Actions 跳过。
-#   2. 下面 job 级 if 兜底:push 上来的若是 "chore: release" commit 直接 skip(防 [skip ci] 万一失效)。
+# 重复发布保护：push 路径排除版本清单，release commit 使用 [skip ci]；
+# release 作业还会跳过以 "chore: release" 开头的 push 提交。
 
 on:
   push:
@@ -55,8 +53,8 @@ on:
         type: boolean
 
 concurrency:
-  # 同一时间只允许一个发版 run —— 防并发 release-it 互撞 tag/push,
-  # 兼作死循环的第三道防线。cancel-in-progress: false —— 发版跑到一半不能打断。
+  # 同一工作流串行执行，避免并发操作相同版本或标签。
+  # cancel-in-progress: false：不因新运行取消进行中的发布。
   # group 用 ${{ github.workflow }}(=本 workflow 名,唯一)而非静态串,避免跟别的 workflow 撞同名并发组。
   group: ${{ github.workflow }}
   cancel-in-progress: false
