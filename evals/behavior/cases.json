@@ -738,7 +738,7 @@
         "uni-code-organization"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md；状态、附属失败与恢复边界。匿名合成约定和流程，评估实际决策，不连接真实应用或服务。"
+      "source": "evals/cases.md#状态附属失败与交付证据"
     },
     {
       "id": "uni-rn-dev-host-lifecycle-updates",
@@ -759,7 +759,7 @@
         "uni-rn-dev"
       ],
       "forbidden_skills": [],
-      "source": "evals/rn-platform-ownership.md；宿主、生命周期与局部更新的合成变体。不使用企业组件契约或真实设备记录。"
+      "source": "evals/rn-platform-ownership.md#宿主生命周期与局部更新"
     },
     {
       "id": "uni-code-organization-delivery-evidence",
@@ -779,7 +779,7 @@
         "uni-code-organization"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md；修订、配置与运行证据的合成对照。所列回执不是真实部署记录，不授权访问服务或设备。"
+      "source": "evals/cases.md#状态附属失败与交付证据"
     }
   ]
 }
