@@ -780,6 +780,77 @@
       ],
       "forbidden_skills": [],
       "source": "evals/cases.md#状态附属失败与交付证据"
+    },
+    {
+      "id": "uni-test-design-new-project",
+      "skill": "uni-test-design",
+      "mode": "application",
+      "prompt": "新 CLI 还没有测试或覆盖率配置。请据题设给出第一批可执行用例和上线前的覆盖验收条件。",
+      "fixtures": {
+        "requirements.md": "两个命令都通过公共写入能力发布文件。成功只产生一份完整输出。写盘失败要给出错误，保留已有文件。取消与发布同时发生时的优先级尚未定义。所有手写运行时文件逐文件达到 100%，统计行和分支。"
+      },
+      "rubric": [
+        "从两个公开命令验证接线，共用规则集中验证，运行真实写入并观察输出文件。",
+        "注入外部写入故障，断言错误与文件保留。未决竞态不擅定结果，继续验证已确认的承诺。",
+        "纳入所有手写运行时文件含未加载文件，逐文件核对行、分支的未覆盖数，再执行门禁。"
+      ],
+      "required_skills": [
+        "uni-test-design"
+      ],
+      "forbidden_skills": [],
+      "source": "匿名合成的功能承诺、维护记录或技能发现请求。"
+    },
+    {
+      "id": "uni-test-design-existing-system",
+      "skill": "uni-test-design",
+      "mode": "application",
+      "prompt": "请审查维护者根据这份报告提出的删分支和补用例建议。",
+      "fixtures": {
+        "audit.md": "全局报告按整数显示 100%，只统计导入文件。手写插件未出现在报告。内部 v0 转换只在旧测试强转时执行，入口、现役版本和重放记录已确认仅支持 v2。另一个 v0 读取器用于恢复支持的旧库，有旧库样本。外部扩展是否还会发送 v1 未查清。发送函数在等待回执前后检查身份，发出后可切换账号。"
+      },
+      "rubric": [
+        "核对缺失插件、报告文件全集和原始计数，不能从总百分比确定逐文件达标。",
+        "清理失效转换与专属用例，保留入口拒绝契约；从历史存储恢复入口验证仍支持的数据。",
+        "保留失效检查，控制回执抵达顺序，验证旧结果不会写入新账号并核对有效操作的正例。",
+        "对外部扩展先查支持的消费者与数据来源，当前材料不足以判死或靠类型强转固化用例。"
+      ],
+      "required_skills": [
+        "uni-test-design"
+      ],
+      "forbidden_skills": [],
+      "source": "匿名合成的功能承诺、维护记录或技能发现请求。"
+    },
+    {
+      "id": "uni-test-design-discovery_positive",
+      "skill": "uni-test-design",
+      "mode": "discovery_positive",
+      "prompt": "请给一个还没写实现的导出工具设计验收用例，同时定下逐文件覆盖率的验收方式。",
+      "fixtures": {},
+      "rubric": [
+        "选择测试设计技能，识别从新功能承诺建立测试的任务。"
+      ],
+      "required_skills": [
+        "uni-test-design"
+      ],
+      "forbidden_skills": [],
+      "source": "匿名合成的功能承诺、维护记录或技能发现请求。"
+    },
+    {
+      "id": "uni-test-design-discovery_negative",
+      "skill": "uni-test-design",
+      "mode": "discovery_negative",
+      "prompt": "请解释下面这条已运行任务的状态，不修改配置或补测试。",
+      "fixtures": {
+        "result.txt": "pytest 完成，14 passed。"
+      },
+      "rubric": [
+        "仅解释现有运行结果，无需启动测试设计或门禁任务。"
+      ],
+      "required_skills": [],
+      "forbidden_skills": [
+        "uni-test-design"
+      ],
+      "source": "匿名合成的功能承诺、维护记录或技能发现请求。"
     }
   ]
 }

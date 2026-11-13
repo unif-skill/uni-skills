@@ -1,6 +1,6 @@
 # Uni Skills
 
-通用工程技能集合，提供第三方技术接入、代码组织、React Native 与 HarmonyOS 开发、库工程、文档规范、技能编写和 GitHub 交付工具。
+通用工程技能集合，提供第三方技术接入、代码组织、测试设计、React Native 与 HarmonyOS 开发、库工程、文档规范、技能编写和 GitHub 交付工具。
 
 ## 技能
 
@@ -8,6 +8,7 @@
 |---|---|
 | [uni-third-party-integration](skills/uni-third-party-integration/SKILL.md) | 第三方库、框架与 SDK 的设计、接入、封装、升级评估及排障 |
 | [uni-code-organization](skills/uni-code-organization/SKILL.md) | 跨语言代码开发、维护和审查中的职责、条件、类型、依赖、异步、注释及工程配置 |
+| [uni-test-design](skills/uni-test-design/SKILL.md) | 新功能的行为测试、已有系统的回归与覆盖率门禁 |
 | [uni-rn-dev](skills/uni-rn-dev/SKILL.md) | RN 组件、Hook、样式、平台接入与 iOS 安装调试 |
 | [uni-rn-library](skills/uni-rn-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
 | [uni-harmony-dev](skills/uni-harmony-dev/SKILL.md) | API 26／V2 下的 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
@@ -49,7 +50,7 @@ npx skills add unif-skill/uni-skills -g \
 更新本集合的技能：
 
 ```sh
-npx skills update -g uni-code-organization uni-rn-dev \
+npx skills update -g uni-code-organization uni-test-design uni-rn-dev \
   uni-rn-library uni-harmony-dev uni-harmony-library \
   uni-documentation uni-skill-authoring uni-github-delivery uni-third-party-integration
 ```
