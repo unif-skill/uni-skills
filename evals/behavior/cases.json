@@ -582,6 +582,27 @@
       "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
     },
     {
+      "id": "uni-skill-authoring-shared-entry",
+      "skill": "uni-skill-authoring",
+      "mode": "application",
+      "prompt": "九个专项都要支持独立安装，维护者提交了一个分发草案。请评审这个草案，给出应保留或调整的文件和入口，并说明怎么验收安装后的结果。只依据所给材料作答，不执行安装、同步和发布。",
+      "fixtures": {
+        "catalog.md": "插件目录已独立提供通用测试技能 test-design，可按名字选用。九个按平台或服务划分的专项也可单独安装。各专项当前自带其工作所需的协议资料，可以独立完成专项任务。例如移动端要验证系统回调，服务端要验证请求重放。遇到通用测试设计任务时，用户可另行选用 test-design。",
+        "proposal.md": "为使九个专项各自的安装包都能看到通用测试说明，草案新增一个生成任务，将 test-design 的 SKILL.md 写入各包 references/testing.md，每次发布检查九份摘要相同。另一个提案是在每包生成可自动发现的 SKILL.md，分别改名为各平台的 test-guide。现有市场会从正式源构建 test-design 发布包；另有生成任务负责把平台协议从版本化规格生成进各自的专项包。"
+      },
+      "rubric": [
+        "以已发布的 test-design 为通用测试任务唯一的可调用入口；指出在九个 references 下同源生成通用正文仍是重复分发，摘要一致也不能证明这种复制必要。",
+        "识别各包改名的 test-guide 或额外触发元数据会产生多个等价入口；给出保留原技能名、用具体使用时机指向它的组织方式，不把额外技能设为完成每个专项任务的前置条件。",
+        "保留专项不同的验证责任及其必需的平台协议资料，并沿用已有的正式市场分发与版本化规格生成链；不因清理重复技能而删除必要资料或停止正式打包。",
+        "验收正式安装产物中通用能力只注册一次，九个专项没有内嵌或改名的等价正文；抽查独立安装的专项可按本地平台协议完成自己的任务，通用任务可选用原技能。区分建议的核查与已执行的结果。"
+      ],
+      "required_skills": [
+        "uni-skill-authoring"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md 的技能编写与审校场景；九个专项共用通用技能的匿名分发草案，评阅书面判断，实际安装另行验证。"
+    },
+    {
       "id": "uni-skill-authoring-discovery_positive-create",
       "skill": "uni-skill-authoring",
       "mode": "discovery_positive",
