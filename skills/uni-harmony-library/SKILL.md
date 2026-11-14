@@ -14,7 +14,7 @@ description: 在创建、提取或维护原生 HarmonyOS HAR 库工程，处理�
 | 新库、应用抽库、公共入口、依赖、共享源码或打包发布 | [库生命周期](references/lifecycle.md) |
 | ArkUI 示例宿主、公开消费和文档预览 | [运行示例](references/examples.md) |
 
-源码实现、文档与 GitHub 交付从工程维护入口取得有效约定，其他已安装技能按任务选用。
+源码实现、文档与 GitHub 交付从工程维护入口取得有效约定。
 
 ## 工程依据
 

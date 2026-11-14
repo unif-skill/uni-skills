@@ -14,7 +14,7 @@ description: 在原生 HarmonyOS 应用或库中实现、调整、排查或审�
 | ArkUI 输入、状态、组件和页面生命周期、主题与布局 | [组件与状态](references/components-state.md) |
 | Context、原生能力、权限、异步操作、文件及验证 | [平台接入](references/platform-integration.md) |
 
-目录、文件与构建命令从工程维护入口及配置取得，其他已安装技能按任务选用。
+目录、文件与构建命令从工程维护入口及配置取得。
 
 ## 实施
 

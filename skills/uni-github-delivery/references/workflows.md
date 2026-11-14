@@ -4,7 +4,7 @@
 
 ## 仓内执行
 
-CI 从当前 checkout 运行 `.github/scripts/check-delivery.cjs`，无需读取外部标准仓或安装技能。共享 PR 审查使用本仓 `.github/workflows/pr-agent-reusable.yml`，调用入口与实现一起生成、一起升级。
+CI 从当前 checkout 运行 `.github/scripts/check-delivery.cjs`。共享 PR 审查使用本仓 `.github/workflows/pr-agent-reusable.yml`，调用入口与实现一起生成、一起升级。
 
 新项目不默认启用外部模型审查。采用自带 PR Agent 模板时，使用现有 `DEEPSEEK_API_KEY` 契约；该服务、模型与密钥需由项目明确采用。模板同步和语法测试不触发实际模型服务。
 
