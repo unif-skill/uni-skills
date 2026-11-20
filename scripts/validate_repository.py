@@ -5,29 +5,31 @@ import argparse
 import json
 import re
 from pathlib import Path
+from collections.abc import Callable
+from typing import TypeGuard
+
+from scripts.skill_validation import check_skill, contained_path, is_object
 
 from scripts.sync_release_tools import check_release_tools
 
 
-def read_json(path):
-    value = json.loads(path.read_text(encoding='utf-8'))
-    if not isinstance(value, dict):
+load_json: Callable[[str], object] = json.loads
+
+
+def is_list(value: object) -> TypeGuard[list[object]]:
+    return isinstance(value, list)
+
+
+def read_json(path: Path) -> dict[str, object]:
+    value = load_json(path.read_text(encoding='utf-8'))
+    if not is_object(value):
         raise ValueError(f'{path}: 必须是 JSON 对象')
     return value
 
 
-def local_file(root, base, name):
-    if not isinstance(name, str) or not name or Path(name).is_absolute():
-        raise ValueError(f'必须使用仓内相对文件路径：{name!r}')
-    path = (base / name).resolve()
-    if not path.is_relative_to(root) or not path.is_file():
-        raise ValueError(f'仓内入口不存在或越出仓库：{name}')
-    return path
-
-
-def validate_repository(root, release_tag=None):
+def validate_repository(root: str | Path, release_tag: str | None = None) -> int:
     root = Path(root).resolve()
-    check_release_tools(root)
+    _ = check_release_tools(root)
     plugin = read_json(root / 'plugin.json')
     if plugin.get('name') != 'uni-skills':
         raise ValueError('plugin.json 必须声明 uni-skills')
@@ -36,20 +38,27 @@ def validate_repository(root, release_tag=None):
         raise ValueError('version 必须是无前导零的 X.Y.Z')
     if release_tag is not None and release_tag != f'v{version}':
         raise ValueError('发布 tag 与 plugin.json version 不一致')
-    interface = plugin
+    interface: object = plugin
     for field in ('extensions', 'com.openai', 'interface'):
-        interface = interface.get(field, {})
-        if not isinstance(interface, dict):
+        if not is_object(interface):
             raise ValueError(f'插件 {field} 必须是对象')
+        interface = interface.get(field, {})
+        if not is_object(interface):
+            raise ValueError(f'插件 {field} 必须是对象')
+    if not is_object(interface):
+        raise ValueError('插件 interface 必须是对象')
     for field in ('composerIcon', 'logo', 'logoDark'):
         if field in interface:
-            local_file(root, root, interface[field])
-    for screenshot in interface.get('screenshots', []):
-        local_file(root, root, screenshot)
+            _ = contained_path(root, root, interface[field])
+    screenshots = interface.get('screenshots', [])
+    if not is_list(screenshots):
+        raise ValueError('插件 screenshots 必须是数组')
+    for screenshot in screenshots:
+        _ = contained_path(root, root, screenshot)
     marketplace = read_json(root / '.agents/plugins/marketplace.json')
     entries = marketplace.get('plugins')
-    if (marketplace.get('name') != plugin['name'] or not isinstance(entries, list) or len(entries) != 1
-            or not isinstance(entries[0], dict) or entries[0].get('name') != plugin['name']
+    if (marketplace.get('name') != plugin['name'] or not is_list(entries) or len(entries) != 1
+            or not is_object(entries[0]) or entries[0].get('name') != plugin['name']
             or entries[0].get('source') != {'source': 'local', 'path': './'}):
         raise ValueError('本仓市场必须引用仓内 Uni 插件入口')
     directory = root / 'skills'
@@ -58,16 +67,22 @@ def validate_repository(root, release_tag=None):
         raise ValueError('没有可分发技能')
     for skill in skills:
         for name in ('SKILL.md', 'agents/openai.yaml'):
-            if not local_file(root, skill, name).read_text(encoding='utf-8').strip():
+            if not contained_path(root, skill, name).read_text(encoding='utf-8').strip():
                 raise ValueError(f'技能入口为空：{skill.name}/{name}')
+        check_skill(skill)
     return len(skills)
 
 
-def main():
+class Arguments(argparse.Namespace):
+    root: Path = Path(__file__).resolve().parents[1]
+    release_tag: str | None = None
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument('--release-tag')
-    args = parser.parse_args()
+    _ = parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
+    _ = parser.add_argument('--release-tag')
+    args = parser.parse_args(namespace=Arguments())
     try:
         count = validate_repository(args.root, release_tag=args.release_tag)
     except (OSError, ValueError) as error:

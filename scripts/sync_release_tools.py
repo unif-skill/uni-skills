@@ -2,19 +2,40 @@
 """从显式指定的本地 Unif 技能仓同步发布器及行为测试；--check 只读比较来源。"""
 
 import argparse
+from collections.abc import Callable
 import hashlib
 import json
 import re
 from pathlib import Path
+from typing import TypeGuard, TypedDict
 
 
 FILES = ('scripts/prepare_release.py', 'scripts/publish_release.py',
          'tests/test_prepare_release.py', 'tests/test_publish_release.py')
 RECORD = 'scripts/release-tools.json'
 SOURCE = 'unif-skill/unif-portal-dev-skills'
+load_json: Callable[[str], object] = json.loads
 
 
-def managed_path(root, name):
+class AdoptionRecord(TypedDict):
+    formatVersion: int
+    source: str
+    files: dict[str, str]
+
+
+def is_mapping(value: object) -> TypeGuard[dict[object, object]]:
+    return isinstance(value, dict)
+
+
+def is_record(value: object) -> TypeGuard[AdoptionRecord]:
+    if not is_mapping(value) or value.get('formatVersion') != 1 or value.get('source') != SOURCE:
+        return False
+    files = value.get('files')
+    return (is_mapping(files) and set(files) == set(FILES)
+            and all(isinstance(name, str) and isinstance(digest, str) for name, digest in files.items()))
+
+
+def managed_path(root: Path, name: str) -> Path:
     path = root
     if root.is_symlink() or not root.is_dir():
         raise ValueError(f'仓库目录必须是普通目录：{root}')
@@ -27,16 +48,14 @@ def managed_path(root, name):
     return path
 
 
-def check_release_tools(root):
+def check_release_tools(root: str | Path) -> AdoptionRecord:
     root = Path(root)
-    record = json.loads(managed_path(root, RECORD).read_text(encoding='utf-8'))
-    if (not isinstance(record, dict) or record.get('formatVersion') != 1
-            or record.get('source') != SOURCE or not isinstance(record.get('files'), dict)
-            or set(record['files']) != set(FILES)):
+    record = load_json(managed_path(root, RECORD).read_text(encoding='utf-8'))
+    if not is_record(record):
         raise ValueError('发布工具来源记录无效或受管文件集合不一致')
     for name in FILES:
         digest = record['files'][name]
-        if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
+        if not re.fullmatch(r'[0-9a-f]{64}', digest):
             raise ValueError(f'发布工具摘要无效：{name}')
         path = managed_path(root, name)
         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
@@ -44,12 +63,12 @@ def check_release_tools(root):
     return record
 
 
-def sync_release_tools(source, target, *, check=False):
+def sync_release_tools(source: str | Path, target: str | Path, *, check: bool = False) -> None:
     source, target = Path(source), Path(target)
     contents = {name: managed_path(source, name).read_bytes() for name in FILES}
     paths = {name: managed_path(target, name) for name in FILES}
     record_path = managed_path(target, RECORD)
-    expected = {
+    expected: AdoptionRecord = {
         'formatVersion': 1, 'source': SOURCE,
         'files': {name: hashlib.sha256(content).hexdigest() for name, content in contents.items()},
     }
@@ -67,17 +86,23 @@ def sync_release_tools(source, target, *, check=False):
                 raise ValueError(f'拒绝覆盖未纳管的已有文件：{name}')
     for name, path in paths.items():
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(contents[name])
-    record_path.write_text(json.dumps(expected, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    check_release_tools(target)
+        _ = path.write_bytes(contents[name])
+    _ = record_path.write_text(json.dumps(expected, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    _ = check_release_tools(target)
 
 
-def main():
+class Arguments(argparse.Namespace):
+    source: Path = Path()
+    target: Path = Path(__file__).resolve().parents[1]
+    check: bool = False
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--source', required=True, type=Path, help='本地 Unif 技能源码仓目录')
-    parser.add_argument('--target', type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument('--check', action='store_true')
-    args = parser.parse_args()
+    _ = parser.add_argument('--source', required=True, type=Path, help='本地 Unif 技能源码仓目录')
+    _ = parser.add_argument('--target', type=Path, default=Path(__file__).resolve().parents[1])
+    _ = parser.add_argument('--check', action='store_true')
+    args = parser.parse_args(namespace=Arguments())
     try:
         sync_release_tools(args.source, args.target, check=args.check)
     except (OSError, ValueError) as error:

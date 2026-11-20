@@ -65,7 +65,27 @@ npx skills update -g uni-code-organization uni-test-design uni-rn-dev \
 
 技能正文保留任务判断、操作、必要来源和验证；技能仓的维护分工、生成和分发流程放在本 README 或对应维护入口。讨论过程不直接写入技能，只保留必要且可复用的结论。涉及操作的版本、授权、平台和资源限制仍在对应步骤说明。
 
-维护脚本回归使用 `python3 -m unittest discover -s tests -v`，配置测试只使用合成配置，不读取真实凭据。`python -m scripts.validate_repository` 另核对插件清单、版本、仓内入口和已采用发布工具；交付工具的完整检查继续运行 `bash skills/uni-github-delivery/scripts/validate.sh`。
+维护、校验和评测使用 Python 3.12；读取技能正文不要求该运行环境。创建独立环境并安装固定的校验依赖：
+
+```sh
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r scripts/requirements-ci.txt
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m scripts.validate_repository
+```
+
+上述命令显式使用工程环境，不依赖系统 `python3` 指向的版本。配置测试使用合成配置，不读取真实凭据。仓库校验覆盖插件清单、版本、技能格式、YAML、本地链接与锚点、已声明资产和已采用发布工具；图标与配套资料目录按技能需要配置。交付工具的完整检查继续运行 `bash skills/uni-github-delivery/scripts/validate.sh`。
+
+通用技能文件校验在 `scripts/skill_validation.py` 维护。Unif 通过显式同步采用模块、测试、依赖清单和类型声明；运行时只使用仓内副本，组织与生成资料检查仍由 Unif 自身维护：
+
+```sh
+.venv/bin/python scripts/sync_validation_tools.py \
+  --source . --target /path/to/unif-portal-dev-skills
+.venv/bin/python scripts/sync_validation_tools.py \
+  --source . --target /path/to/unif-portal-dev-skills --check
+```
+
+`--check` 只读比较指定来源。采用仓运行 `python scripts/sync_validation_tools.py --verify` 核对副本与已登记摘要，不访问维护源；同步拒绝覆盖无法核实归属的已有文件。
 
 RN 默认开发检查及配置模板以 `uni-rn-dev/references/quality.md` 和 `uni-rn-dev/templates/quality/` 为维护源；修改后运行 `python scripts/sync_rn_quality.py`，同步到 RN 库和 GitHub 交付技能的独立副本，再用 `--check` 核对。消费者无需安装其他技能，也不读取技能仓根目录脚本。质量模板按目标工程合并采用，不覆盖已有工具链、规则和有效例外，不自动迁移其他仓库。
 
@@ -74,6 +94,35 @@ RN 默认开发检查及配置模板以 `uni-rn-dev/references/quality.md` 和 `
 使用[评测任务](evals/cases.md)检查实际输出、独立使用和任务边界，再核对格式、相对引用及插件清单。行为运行记录放在仓库外；计划和设计保留在 `docs/`，不进入技能默认上下文。
 
 [RN 平台独立使用](evals/rn-platform-ownership.md)覆盖 iOS 安装调试和变更验证范围，核对通用流程不依赖企业技能。
+
+### 联合发现评测
+
+`evals/joint-discovery/` 维护 Uni 与 Unif 同时可用时的专项发现题库和冻结目录。目录包含两个包的全部技能名称与触发描述，题目检查应组合使用的技能及应排除的误选，不将两层设为互斥选择。该评测独立于现有单包题库。
+
+离线校验只读取仓内冻结资料，不需要安装 Unif、访问其他私有仓或调用模型：
+
+```sh
+.venv/bin/python -m scripts.joint_discovery_eval validate
+```
+
+目录更新由维护者显式提供两仓路径和完整提交 SHA，生成后核对来源。以下占位值须替换为实际路径与修订：
+
+```sh
+.venv/bin/python -m scripts.joint_discovery_eval freeze \
+  --uni-repo /path/to/uni-skills --uni-ref UNI_COMMIT_SHA \
+  --unif-repo /path/to/unif-portal-dev-skills --unif-ref UNIF_COMMIT_SHA
+.venv/bin/python -m scripts.joint_discovery_eval verify-sources \
+  --uni-repo /path/to/uni-skills --unif-repo /path/to/unif-portal-dev-skills
+```
+
+真实模型运行使用[行为评测配置](evals/behavior/README.md)，显式启用并配置模型、服务地址、凭据和请求预算，每次使用新的仓库外输出目录：
+
+```sh
+SKILL_EVAL_ENABLED=true .venv/bin/python -m scripts.joint_discovery_eval run \
+  --output /tmp/uni-unif-joint-discovery
+```
+
+缺少运行条件或样本不完整时报告证据不足，不计为通过。离线校验只证明题库与目录一致；模型选择结果不代替宿主实际加载或业务验收。
 
 ### 查看评测报告
 
