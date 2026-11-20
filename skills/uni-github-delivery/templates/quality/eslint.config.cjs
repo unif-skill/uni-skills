@@ -153,7 +153,7 @@ module.exports = [
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-unsafe-type-assertion': 'error',
-      // Umi 使用的旧 ban-types / no-empty-interface 在 v8 中拆分为以下规则。
+      // typescript-eslint v8 将旧 ban-types / no-empty-interface 拆分为以下规则。
       '@typescript-eslint/no-empty-object-type': 'error',
       '@typescript-eslint/no-wrapper-object-types': 'error',
       '@typescript-eslint/no-unsafe-function-type': 'error',

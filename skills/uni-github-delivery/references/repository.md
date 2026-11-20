@@ -10,7 +10,7 @@
 bash scripts/setup-repo.sh example/widget --target-path /path/to/widget --check
 ```
 
-`--check` 只读。缺权限、必需检查尚未注册、多个同名 ruleset 或无法取得关键配置时失败，不先写远端再猜结果。应用模式不带 `--check`，需要本次任务明确授权，并在修改后回读核对。
+`--check` 只读。缺权限、必需检查尚未注册、多个同名 ruleset 或无法取得关键配置时失败，不先写远端再猜结果。应用模式不带 `--check`，需要远端配置的明确操作授权，并在修改后回读核对。
 
 发布 App 必须属于目标工程已批准的发布身份。已有 bypass actors、额外检查和非受管规则保留；新建保护且缺少可直接推送的发布 Integration 时，明确提供真实 App ID：
 

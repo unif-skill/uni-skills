@@ -1,7 +1,7 @@
 interface:
   display_name: "Uni 技能编写与审校"
   short_description: "编写和审查技能内容，核对适用范围、规则复用、来源与验证"
-  default_prompt: "使用 $uni-skill-authoring 编写或审查本次技能，保留有效约束并验证触发范围。"
+  default_prompt: "使用 $uni-skill-authoring 编写或审查技能，保留有效约束并验证适用范围。"
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.svg"
 policy:
