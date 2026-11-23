@@ -112,9 +112,7 @@ RN 默认开发检查及配置模板以 `uni-rn-dev/references/quality.md` 和 `
 
 ### 联合发现评测
 
-`evals/joint-discovery/` 维护 Uni 与 Unif 同时可用时的专项发现题库和冻结目录。目录包含两个包的全部技能名称与触发描述，题目检查应组合使用的技能及应排除的误选，不将两层设为互斥选择。该评测独立于现有单包题库。
-
-[候选联合题目](evals/joint-discovery/cases.next.json)覆盖当前两仓的任务入口。正式评测仍采用同批冻结的 `catalog.json` 和 `cases.json`。取得两仓来源提交后，用 `freeze --catalog` 将新目录写至临时文件，通过 `validate --catalog <新目录> --suite evals/joint-discovery/cases.next.json` 核对，再一并替换正式目录和题目，同步到 Unif。
+[正式联合目录](evals/joint-discovery/catalog.json)记录两个来源提交、全部技能名称和触发描述。[配套题库](evals/joint-discovery/cases.json)逐题规定必选和禁选的技能，覆盖单技能选择和跨包组合。Uni 维护这两份文件，Unif 同步采用。
 
 离线校验只读取仓内冻结资料，不需要安装 Unif、访问其他私有仓或调用模型：
 
@@ -122,7 +120,7 @@ RN 默认开发检查及配置模板以 `uni-rn-dev/references/quality.md` 和 `
 .venv/bin/python -m scripts.joint_discovery_eval validate
 ```
 
-核对候选目录时提供两仓路径和完整提交 SHA。将以下示例路径和修订替换为实际值，三条命令共用同一个仓外目录文件。
+更新冻结目录时，先从两个完整提交生成仓外候选文件，再核对来源和配套题目。以下命令使用现行题库。题目也有改动时，将最后一条命令的 `--suite` 指向候选题库。两项校验都通过后，再将核实过的目录和题目一起更新到正式位置，并运行 `scripts/sync_evaluation_tools.py` 同步到 Unif。
 
 ```sh
 .venv/bin/python -m scripts.joint_discovery_eval freeze \
@@ -133,7 +131,7 @@ RN 默认开发检查及配置模板以 `uni-rn-dev/references/quality.md` 和 `
   --catalog /tmp/uni-unif-candidate-catalog.json \
   --uni-repo /path/to/uni-skills --unif-repo /path/to/unif-portal-dev-skills
 .venv/bin/python -m scripts.joint_discovery_eval validate \
-  --catalog /tmp/uni-unif-candidate-catalog.json --suite evals/joint-discovery/cases.next.json
+  --catalog /tmp/uni-unif-candidate-catalog.json --suite evals/joint-discovery/cases.json
 ```
 
 真实模型运行使用[行为评测配置](evals/behavior/README.md)，显式启用并配置模型、服务地址、凭据和请求预算，每次使用新的仓库外输出目录：
