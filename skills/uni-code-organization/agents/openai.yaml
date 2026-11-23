@@ -1,6 +1,0 @@
-interface:
-  display_name: "Uni 代码组织与实现规范"
-  short_description: "跨语言代码开发与审查中的职责、异步、故障证据和验证边界"
-  default_prompt: "使用 $uni-code-organization 按当前项目约定完成代码开发、维护或审查，检查职责、类型、异步、必要故障证据和相关验证。"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.svg"

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Uni 实现、重构与清理代码"
+  short_description: "按已确认的目标修改代码与配置，核对消费者、状态及受影响行为"
+  default_prompt: "使用 $uni-code-change 按已确认的要求实现变更，保留有效契约并验证实际调用。"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"

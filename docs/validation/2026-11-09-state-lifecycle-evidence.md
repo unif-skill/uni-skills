@@ -6,7 +6,7 @@
 
 将六类原则合并到已有职责：状态按用途与生命周期保存，错误按实际影响处理，呈现、执行、资源与恢复分别管理，复用核对完整使用条件，更新范围对应实际依赖，交付结论对应运行证据。
 
-通用规则由 [目录与职责](../../skills/uni-code-organization/references/structure.md)及[函数与异步流程](../../skills/uni-code-organization/references/functions-and-async.md)承接；RN 的具体应用并入[组件与状态](../../skills/uni-rn-dev/references/components.md)及[平台接入与验证](../../skills/uni-rn-dev/references/platform-integration.md)。保留关键保存屏障、未知写入保护、有效业务更新与资源归属。规则不绑定具体应用、设备、导航实现或一律新建请求的重试方式。
+通用规则由 [目录与职责](https://github.com/unif-skill/uni-skills/blob/fcb6b46c942cb8b54466b00ea5b2f52099c8e037/skills/uni-code-organization/references/structure.md)及[函数与异步流程](https://github.com/unif-skill/uni-skills/blob/fcb6b46c942cb8b54466b00ea5b2f52099c8e037/skills/uni-code-organization/references/functions-and-async.md)承接；RN 的具体应用并入[组件与状态](../../skills/uni-rn-dev/references/components.md)及[平台接入与验证](../../skills/uni-rn-dev/references/platform-integration.md)。保留关键保存屏障、未知写入保护、有效业务更新与资源归属。规则不绑定具体应用、设备、导航实现或一律新建请求的重试方式。
 
 ## 验证结果与限制
 

@@ -6,10 +6,10 @@ from pathlib import Path
 
 
 OWNER = 'uni-rn-dev'
-CONSUMERS = ('uni-rn-library', 'uni-github-delivery')
+CONSUMERS = ('uni-rn-library', 'uni-github-delivery-setup')
 
 
-def safe_path(root, relative):
+def safe_path(root: Path, relative: Path) -> Path:
     path = root
     for part in relative.parts:
         path = path / part
@@ -18,7 +18,7 @@ def safe_path(root, relative):
     return path
 
 
-def sync_quality(root, check=False):
+def sync_quality(root: str | Path, check: bool = False) -> int:
     root = Path(root).resolve()
     owner = Path('skills') / OWNER
     source = root / owner
@@ -28,8 +28,8 @@ def sync_quality(root, check=False):
         raise ValueError('缺少 RN 默认检查规范或模板来源')
     files = [document, *sorted(path.relative_to(source) for path in (source / templates).rglob('*') if path.is_file())]
     expected = {relative: safe_path(root, owner / relative).read_bytes() for relative in files}
-    writes = []
-    differences = []
+    writes: list[tuple[Path, bytes]] = []
+    differences: list[str] = []
     for name in CONSUMERS:
         for relative, content in expected.items():
             target = Path('skills') / name / relative
@@ -44,15 +44,20 @@ def sync_quality(root, check=False):
     if not check:
         for path, content in writes:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(content)
+            _ = path.write_bytes(content)
     return len(expected) * len(CONSUMERS)
 
 
-def main():
+class Arguments(argparse.Namespace):
+    root: Path = Path(__file__).resolve().parents[1]
+    check: bool = False
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument('--check', action='store_true')
-    args = parser.parse_args()
+    _ = parser.add_argument('--root', type=Path, default=Arguments.root)
+    _ = parser.add_argument('--check', action='store_true')
+    args = parser.parse_args(namespace=Arguments())
     try:
         count = sync_quality(args.root, check=args.check)
     except (OSError, ValueError) as error:

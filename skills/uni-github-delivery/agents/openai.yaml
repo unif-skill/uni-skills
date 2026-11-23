@@ -1,6 +1,0 @@
-interface:
-  display_name: "Uni GitHub 工程交付"
-  short_description: "接入和维护 GitHub CI、仓库保护、模板同步及发布验证"
-  default_prompt: "使用 $uni-github-delivery 核对工程交付配置，在授权范围内调整并报告分层验证结果。"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.svg"

@@ -2,10 +2,10 @@
   "formatVersion": 1,
   "cases": [
     {
-      "id": "uni-code-organization-application",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-application",
+      "skill": "uni-code-change",
       "mode": "application",
-      "prompt": "请审阅 fixtures 中这一新增私有组件的组织草稿，给出可以直接交给开发者评审的目录树、各文件内容归属和必要导入／导出调整。随后说明 variant-a 与 variant-b 各自会怎样影响方案。只输出方案，不修改或运行工程。",
+      "prompt": "请为 fixtures 中已确认新增的私有组件整理实现方案，给出可以直接交给开发者评审的目录树、各文件内容归属和必要导入／导出调整。随后说明 variant-a 与 variant-b 各自会怎样影响方案。只输出方案，不修改或运行工程。",
       "fixtures": {
         "facts.md": "这是一份新 React Native 应用的静态设计资料。已确定 screens/ 用于页面，应用当前只有 App.tsx、screens/ReadingsScreen.tsx。ReadingsScreen 需要一个私有 MeasurementCard，同页并排显示两个传感器。\nMeasurementCard 接收 reading、onRefresh，显示读数；达到 38 时高亮，使用项目主题 token，不改变阈值或刷新行为。组件显示距本次挂载经过的秒数，每个实例独立计时，卸载后停止；每个实例可独立刷新。\n当前无跨页面消费者；项目尚未规定组件配套文件命名。App 通过现有页面入口加载 ReadingsScreen，没有待添加的全局服务或额外业务功能。\n本题只涉及这一新增单元的组织，不要求迁移整个应用。",
         "screens/ReadingsScreen.tsx": "import { MeasurementCard } from './MeasurementCard';\nexport function ReadingsScreen() {\n  return <>{/* 实际页面传入两个不同的 reading 与 onRefresh */}<MeasurementCard reading={left} onRefresh={refreshLeft} /><MeasurementCard reading={right} onRefresh={refreshRight} /></>;\n}\n// 本文件为省略数据装配部分的静态片段；left/right 由页面现有数据层提供。\n",
@@ -25,30 +25,34 @@
         "指出必要的调用导入与实际消费者检查，保留主题及无障碍信息；验证建议覆盖两个同时挂载实例和卸载，不把静态方案称为运行通过。"
       ],
       "required_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md；对应 uni-code-organization 现行任务适配。将“有 props、命名阈值、样式和实例计时器的私有组件”具化为代码草稿，保留既有命名与 Schema 变体。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+      "source": "evals/cases.md；对应 uni-code-change 现行任务适配。将“有 props、命名阈值、样式和实例计时器的私有组件”具化为代码草稿，保留既有命名与 Schema 变体。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。",
+      "baseline_skill": "uni-code-organization"
     },
     {
-      "id": "uni-code-organization-discovery_positive",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-discovery_positive",
+      "skill": "uni-code-change",
       "mode": "discovery_positive",
       "prompt": "这个工程已经用 features 管业务。现在要把一个 900 行的页面拆成页面、两个私有子组件和数据适配文件，还要迁移它的环境配置入口。请帮我确定目录、文件职责和对外导出，检查现有路由及调用方需要同步哪些地方。",
       "fixtures": {},
       "rubric": [
-        "应选择 uni-code-organization：任务实际涉及目录、文件职责、入口及配置迁移。",
+        "应选择 uni-code-change：任务实际涉及目录、文件职责、入口及配置迁移。",
         "选择理由应落到该请求的组织与迁移工作，而非仅因出现“页面”猜测平台。"
       ],
       "required_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
-      "forbidden_skills": [],
-      "source": "evals/cases.md；对应 uni-code-organization 现行任务适配。自然语言发现正例，无技能名称提示。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+      "forbidden_skills": [
+        "uni-debugging",
+        "uni-code-review"
+      ],
+      "source": "evals/cases.md；对应 uni-code-change 现行任务适配。自然语言发现正例，无技能名称提示。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
     },
     {
-      "id": "uni-code-organization-control-flow",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-control-flow",
+      "skill": "uni-code-change",
       "mode": "application",
       "prompt": "请根据 fixtures/task.md 整理现有读取实现，并说明新增详情读取入口如何复用；输出关键代码、必要注释和验证安排。只输出方案，不修改或运行工程。",
       "fixtures": {
@@ -63,44 +67,45 @@
         "验证针对实际实现及 Catalog／Detail 调用方，覆盖共享信号、混合等待阶段、乱序与迟到、类型约束等受影响项，并说明静态方案尚未运行；不以纯文案或小范围整理要求全套发布、真机流程。"
       ],
       "required_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md；普通 TypeScript 读取能力的新消费者接入与内部整理。合成静态资料，不包含企业接口、实际凭据或真实服务。"
+      "source": "evals/cases.md；普通 TypeScript 读取能力的新消费者接入与内部整理。合成静态资料，不包含企业接口、实际凭据或真实服务。",
+      "baseline_skill": "uni-code-organization"
     },
     {
-      "id": "uni-code-organization-discovery-implementation",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-discovery-implementation",
+      "skill": "uni-code-change",
       "mode": "discovery_positive",
       "prompt": "我要写一个普通 TypeScript 数据读取模块，整理成功、失败和取消的返回类型，接上两个现有调用方。还需要检查重复判断、异常收尾和必要注释，不调整工程目录或引入新框架。请按项目规范完成。",
       "fixtures": {},
       "rubric": [
-        "应选择 uni-code-organization：普通代码编写、类型、条件、异常和注释属于其范围，不以目录迁移或已有代码重构为触发前提。",
+        "应选择 uni-code-change：普通代码编写、类型、条件、异常和注释属于其范围，不以目录迁移或已有代码重构为触发前提。",
         "不推定 RN、鸿蒙或特定第三方库；其他技能按实际依赖选择，不因“代码规范”强制全套设计、构建或发布。"
       ],
       "required_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
       "forbidden_skills": [],
       "source": "普通实现任务的技能发现正例，不含技能名和目录整理要求。"
     },
     {
-      "id": "uni-code-organization-discovery_negative",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-discovery_negative",
+      "skill": "uni-code-change",
       "mode": "discovery_negative",
       "prompt": "README 中有一句“所有组建按责职分组，入口统一暴露”。请只修正这句话的错别字，让它适合放在工程介绍里。",
       "fixtures": {},
       "rubric": [
         "应选择 uni-documentation，因为请求是工程文字校正。",
-        "不应选择 uni-code-organization：没有改变或审查文件职责、目录、命名或入口。"
+        "不应选择 uni-code-change：没有改变或审查文件职责、目录、命名或入口。"
       ],
       "required_skills": [
         "uni-documentation"
       ],
       "forbidden_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
-      "source": "evals/cases.md；对应 uni-code-organization 现行任务适配。自然语言发现反例：文案包含组织术语但无工程组织任务。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+      "source": "evals/cases.md；对应 uni-code-change 现行任务适配。自然语言发现反例：文案包含组织术语但无工程组织任务。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
     },
     {
       "id": "uni-rn-dev-application",
@@ -345,8 +350,8 @@
       "source": "evals/cases.md；对应 uni-harmony-library 现行任务适配。自然语言发现反例：应用消费已有 HAR。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
     },
     {
-      "id": "uni-github-delivery-application",
-      "skill": "uni-github-delivery",
+      "id": "uni-github-delivery-setup-application",
+      "skill": "uni-github-delivery-setup",
       "mode": "application",
       "prompt": "请审阅 fixtures 中的交付接入资料：为 RN 新库和既有库分别给出本地接入／迁移及核验步骤，再分别给出 Python 工程 A／B／C 三种观察结果下可完成的工作和完成判定。只做静态方案评审，不执行命令或访问远端。",
       "fixtures": {
@@ -372,42 +377,43 @@
         "B 的完成判据包含回读仓库设置、规则匹配与启用、实际检查、bypass 以及有效分支规则；保留既有更强保护与非受管项，不以 PATCH 成功证明生效，也不宣称观察到拒绝推送。"
       ],
       "required_skills": [
-        "uni-github-delivery"
+        "uni-github-delivery-setup"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md；对应 uni-github-delivery 现行任务适配。保留 RN 新接入／专有迁移与非 RN 无发布 App 边界；以静态授权分支和观察结果覆盖本地授权、远端授权、读取失败及更强保护。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+      "source": "evals/cases.md；对应 uni-github-delivery-setup 现行任务适配。保留 RN 新接入／专有迁移与非 RN 无发布 App 边界；以静态授权分支和观察结果覆盖本地授权、远端授权、读取失败及更强保护。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。",
+      "baseline_skill": "uni-github-delivery"
     },
     {
-      "id": "uni-github-delivery-discovery_positive",
-      "skill": "uni-github-delivery",
+      "id": "uni-github-delivery-setup-discovery_positive",
+      "skill": "uni-github-delivery-setup",
       "mode": "discovery_positive",
       "prompt": "团队决定给已有的 Python GitHub 仓库补齐 PR 门禁和分支保护，只允许 Squash，并保留组织继承的签名与额外检查。这个服务没有包发布机器人。请核对实际 CI 作业和远端规则，准备配置差异。",
       "fixtures": {},
       "rubric": [
-        "应选择 uni-github-delivery：涉及 GitHub CI 门禁、仓库设置与有效分支保护。",
+        "应选择 uni-github-delivery-setup：涉及 GitHub CI 门禁、仓库设置与有效分支保护。",
         "应识别这是平台无关交付配置任务，不能因不是 RN 或没有发布 App 而漏选。"
       ],
       "required_skills": [
-        "uni-github-delivery"
+        "uni-github-delivery-setup"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md；对应 uni-github-delivery 现行任务适配。自然语言发现正例：非 RN 且无自动发布。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+      "source": "evals/cases.md；对应 uni-github-delivery-setup 现行任务适配。自然语言发现正例：非 RN 且无自动发布。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
     },
     {
-      "id": "uni-github-delivery-discovery_negative",
-      "skill": "uni-github-delivery",
+      "id": "uni-github-delivery-setup-discovery_negative",
+      "skill": "uni-github-delivery-setup",
       "mode": "discovery_negative",
       "prompt": "帮我看一下这次 GitHub Actions 运行现在是什么状态：Python lint 已成功，Python unit 已失败，日志最后一行是 AssertionError，文档作业还在排队。请用一句话告诉我目前是否能认为整次运行成功。",
       "fixtures": {},
       "rubric": [
-        "不应选择 uni-github-delivery：仅查询一次作业状态，没有接入、维护或核验交付配置标准。",
+        "不应选择 uni-github-delivery-setup：仅查询一次作业状态，没有接入、维护或核验交付配置标准。",
         "不应扩展为修改 CI、分支保护、发布或仓库设置。"
       ],
       "required_skills": [],
       "forbidden_skills": [
-        "uni-github-delivery"
+        "uni-github-delivery-setup"
       ],
-      "source": "evals/cases.md；对应 uni-github-delivery 现行任务适配。自然语言发现反例：单纯作业状态查询。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
+      "source": "evals/cases.md；对应 uni-github-delivery-setup 现行任务适配。自然语言发现反例：单纯作业状态查询。所有项目、草稿及执行记录均为合成静态材料，未连接真实服务，不构成构建、设备或真实业务验收。"
     },
     {
       "id": "uni-documentation-application",
@@ -528,10 +534,10 @@
       "source": "evals/third-party-integration.md；提及第三方 SDK 但仅修正文案的发现反例。"
     },
     {
-      "id": "uni-code-organization-existing-capability",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-existing-capability",
+      "skill": "uni-code-change",
       "mode": "application",
-      "prompt": "请审查导入面板新增键盘粘贴入口的方案，给出可落地的调整建议和验证范围。只依据 fixtures 的当前确认与源码节选判断，不修改或运行工程，不联网或操作真实设备。节选省略的内部实现不能据此判定为缺陷；本题不要求完整代码审计。",
+      "prompt": "已确认导入面板需要新增键盘粘贴入口，给出可落地的调整建议和验证范围。只依据 fixtures 的当前确认与源码节选判断，不修改或运行工程，不联网或操作真实设备。节选省略的内部实现不能据此判定为缺陷；本题不要求完整代码审计。",
       "fixtures": {
         "scenario.md": "导入面板已有文件选择和拖放入口，现在增加键盘粘贴。三者面向同一面板草稿及同一用户生命周期，处理相同的 LocalDocument 格式，均只准备附件、不自动提交。已有 clipboard.bindPaste 在面板拥有焦点时交付 LocalDocument，并返回解除监听函数；权限、输入格式和焦点判断已经由该适配完成，不需要新增解析器。\n最新确认：复用面板现有生命周期，不增加后台服务、统一任务中心或历史数据迁移。之前审查要求补历史迁移和启动恢复服务，已明确撤回。\n方案草稿：创建 KeyboardImportManager 和 KeyboardImportStore，各自负责上传、准备、取消和错误提示，完成后把结果复制回面板 store；保留原有两个入口。先搭建任务中心和恢复服务，再接入粘贴。\n",
         "src/documents/index.ts": "export { createInbox } from './createInbox';\nexport type { Inbox, LocalDocument, InboxDependencies } from './types';\n",
@@ -548,10 +554,11 @@
         "提出验证三个实际入口及共用调用、解除监听、离页/身份结束/迟到结果，说明本次只有静态方案判断，未运行的检查不宣称通过。"
       ],
       "required_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
       "forbidden_skills": [],
-      "source": "匿名合成的已有能力复用与新会话接续场景；所有源码为固定节选，只验证书面应用，不对应真实工程或运行验收。"
+      "source": "匿名合成的已有能力复用与新会话接续场景；所有源码为固定节选，只验证书面应用，不对应真实工程或运行验收。",
+      "baseline_skill": "uni-code-organization"
     },
     {
       "id": "uni-skill-authoring-application",
@@ -580,6 +587,29 @@
       ],
       "forbidden_skills": [],
       "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
+    },
+    {
+      "id": "uni-skill-authoring-independent-prose",
+      "skill": "uni-skill-authoring",
+      "mode": "application",
+      "prompt": "请用这些材料写出库内可直接采用的整份 SKILL.md，交给一位没有参加过讨论的维护者。只提交最终技能文件的内容。",
+      "fixtures": {
+        "maintainer-notes.md": "我们周一开会，说原来的入口叫「冷链台账迁移工」，再换一遍名字。小严觉得这是补丁，我强调不是，我当时选四列表格也是有道理的。上次复盘记了两次：别把温度零当作没测。最后大家同意沿用任务名 temperature-sheet-import。",
+        "draft.md": "# TSI OPS V2 FLOW\n→ S1 SRC；S2 COLCHK/ERR/S3 WRITE；KEEP RAW；RPL！\n固定输出四段，一律先列旧流程和新流程的差异，再列字段别名，最后写一句开发者选择它的理由。",
+        "contract.md": "任务是从仪器导出的第二版 CSV 更新现有温度台账。批号必须与目标台账一致。列 measuredAt 与 tempC 均必填，温度 0 有效，空温度拒绝。先验证全文件，任意坏行都保留原台账并返回源文件的行号；全部有效才写入新记录。仪器文件是借用资料，交还时保留原文件。没有为别名、单位转换或删除原文件定义支持。"
+      },
+      "rubric": [
+        "提供可直接采用的 SKILL.md，含准确的名称、触发描述及独立正文。新读者能按实际工作的先后从选择目标台账、核对文件、检查行到成功写入或报告失败，无需解码草稿缩写。",
+        "以有效契约核对批号、第二版 CSV、两个必填列、零和空值的区别、全文件预检、坏行保住原台账并返回源行号、保留借用源文件。核对每项结果的适用条件，不将坏行的回执扩展成格式错误（例如缺列）的新承诺，也不自行新增别名转换或删源文件。",
+        "根据最终正文的意义和组织判断是否清除了会议人物、旧名、命名理由、表格辩护和复盘经过。即使换词或用比较表改述来历也不合格；对零值等真正改变判断的事实应保留。",
+        "维护者在无需会话上下文的情况下能说清三件事：何时选用、如何处理一行数据、怎样判定整批完成或失败。审阅具体动词、句意、标题和顺序，接受自然段、步骤或有实际比较作用的表格，不机械限定格式或按禁词计分。",
+        "单独阅读名称和 description 能判断这是把仪器的第二版 CSV 导入现有温度台账，与一般表格内容编辑区分。描述用自然短句说明何时选用，预检、零值和失败处理的具体步骤留在正文。"
+      ],
+      "required_skills": [
+        "uni-skill-authoring"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md#编写供独立维护者使用的技能"
     },
     {
       "id": "uni-skill-authoring-shared-entry",
@@ -693,8 +723,8 @@
       "source": "evals/cases.md 的技能编写与审校场景；匿名合成材料，仅验证书面应用或技能选择，不构成真实安装、执行或业务证据。"
     },
     {
-      "id": "uni-code-organization-adjustment-confirmation",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-adjustment-confirmation",
+      "skill": "uni-code-change",
       "mode": "application",
       "prompt": "请依据 fixtures/requests.md 处理其中互不关联的维护请求；其余 fixtures 是已核实的题内事实。只输出本轮答复，不修改或运行工程。",
       "fixtures": {
@@ -713,13 +743,14 @@
       ],
       "source": "evals/cases.md：通用调整判断与用户确认；匿名合成的跨消费者、生命周期、知情决定、清理与局部修改对照。",
       "required_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
-      "forbidden_skills": []
+      "forbidden_skills": [],
+      "baseline_skill": "uni-code-organization"
     },
     {
-      "id": "uni-code-organization-source-inspection-confirmation",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-source-inspection-confirmation",
+      "skill": "uni-code-change",
       "mode": "application",
       "prompt": "把 buildSummary 返回的 periodLabel 删掉吧，卡片标题直接用 periodId，我看两个字段重复了。前面说的清理方向已经同意了，就按这个调整，其他正常行为保持。请查看题内工程后给出本轮回复及处理范围；本题只读，不执行修改。",
       "fixtures": {
@@ -736,16 +767,17 @@
         "先前同意清理方向不作为已确认新发现语义变化的证据；不虚构已修改或测试通过。"
       ],
       "required_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md：源码主动核查与确认顺序；匿名合成源码，补充完整事实短题未覆盖的先承诺后检查。"
+      "source": "evals/cases.md：源码主动核查与确认顺序；匿名合成源码，补充完整事实短题未覆盖的先承诺后检查。",
+      "baseline_skill": "uni-code-organization"
     },
     {
-      "id": "uni-code-organization-state-failure-boundaries",
-      "skill": "uni-code-organization",
+      "id": "uni-code-change-state-failure-boundaries",
+      "skill": "uni-code-change",
       "mode": "application",
-      "prompt": "请审阅 fixtures/task.md 中的普通应用流程，给出最小修改方案、关键伪代码和验证范围。只做静态审阅，不修改或运行工程。",
+      "prompt": "请按 fixtures/task.md 中的契约调整普通应用流程，给出最小修改方案、关键伪代码和验证范围。只做静态审阅，不修改或运行工程。",
       "fixtures": {
         "task.md": "项目提供以下有效约定与实现，均为匿名合成资料。\n- 编辑草稿、用户已确认选择和已发送写请求的关联需要跨进程恢复；候选列表可按查询条件重取，进度与确认展开只用于当前交互。\n- 获取目录成功即可使用结果，缓存是后续读取的加速。服务端写入以有效成功回执为准。\n- 写请求开始前必须可靠保存原请求关联；服务端不承诺幂等，也没有撤销接口。结果未知时只能核实原请求。\n- 应用目前在一个共享 store 中保存上述全部状态；任何状态通知都会 captureAll、校验、序列化并保存完整快照。\n- readCatalog 顺序执行 remote.read、cache.write，二者共用 catch，任一拒绝都返回“查询失败”。\n- submit 顺序执行 journal.savePending、remote.write、saveDisplayStatus，三者共用 catch，任一拒绝都返回“提交失败，可重试”。其中 saveDisplayStatus 只保存成功提示的展示状态，服务端成功回执及原请求关联由 journal 单独可靠保存。\n- 当前代码在确认展开、三个进度通知期间分别捕获四次快照；该结果来自本地可控用例，没有设备耗时。\n同事为尽快消除卡顿，建议所有存储失败只记日志，写请求也直接发送；把全部快照放在一个去抖定时器里；任意失败都换请求号重试。请判断并修正方案，保留有效约定，勿增加新的框架、后台任务或业务提示。\n"
       },
@@ -756,10 +788,11 @@
         "提出真实实现及消费者用例：临时更新不触发完整保存、缓存失败仍可消费、成功后展示失败不重发、写前失败零请求、未知结果不重复写；不把快照次数称为真机卡顿原因或已完成验证。"
       ],
       "required_skills": [
-        "uni-code-organization"
+        "uni-code-change"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md#状态附属失败与交付证据"
+      "source": "evals/cases.md#状态附属失败与交付证据",
+      "baseline_skill": "uni-code-organization"
     },
     {
       "id": "uni-rn-dev-host-lifecycle-updates",
@@ -783,8 +816,8 @@
       "source": "evals/rn-platform-ownership.md#宿主生命周期与局部更新"
     },
     {
-      "id": "uni-code-organization-delivery-evidence",
-      "skill": "uni-code-organization",
+      "id": "uni-verify-change-delivery-evidence",
+      "skill": "uni-verify-change",
       "mode": "application",
       "prompt": "请根据 fixtures/evidence.md 判断当前交付情况，并给出最少的补核对步骤和对用户的说明。只做只读分析，不执行部署、构建或业务调用。",
       "fixtures": {
@@ -797,10 +830,11 @@
         "交付说明区分静态、自动化、构建、安装、启动、健康或连通和业务层级，明确未执行补核对及未完成联调；本题只读不实际变更系统。"
       ],
       "required_skills": [
-        "uni-code-organization"
+        "uni-verify-change"
       ],
       "forbidden_skills": [],
-      "source": "evals/cases.md#状态附属失败与交付证据"
+      "source": "evals/cases.md#状态附属失败与交付证据",
+      "baseline_skill": "uni-code-organization"
     },
     {
       "id": "uni-test-design-new-project",
@@ -853,7 +887,9 @@
       "required_skills": [
         "uni-test-design"
       ],
-      "forbidden_skills": [],
+      "forbidden_skills": [
+        "uni-verify-change"
+      ],
       "source": "匿名合成的功能承诺、维护记录或技能发现请求。"
     },
     {
@@ -872,6 +908,177 @@
         "uni-test-design"
       ],
       "source": "匿名合成的功能承诺、维护记录或技能发现请求。"
+    },
+    {
+      "id": "uni-debugging-application",
+      "skill": "uni-debugging",
+      "mode": "application",
+      "prompt": "请根据日志和配置说明为什么部分明细请求在发布后偶发返回 502，指出证据能定位到哪一层，以及如何验证判断。本次只需诊断。",
+      "fixtures": {
+        "incident.md": "两台实例 w1、w2 使用同一镜像 sha:6a1，经过同一网关和同一计价服务。r31 与 r32 查询同一个商品，用户连续刷新。部分请求失败。\n网关 r31 -> w1 HTTP 200；r32 -> w2 HTTP 502，响应摘要 detail unavailable。\n计价服务 r31/r32 均返回 HTTP 200，正文均为 {\"totalCents\":300}。\nw1 r31 boot config=/app/p/current parser=v2；parse ok，向网关返回 200。\nw2 r32 boot config=/app/p/previous parser=v1；parse expected amount，返回 detail unavailable。\n解析器 v1 读取 amount；v2 读取 totalCents。启动器优先使用 CONFIG_FILE，缺省读 /app/p/current。部署清单中 w2 的 CONFIG_FILE 指向 /app/p/previous，w1 未设置。"
+      },
+      "rubric": [
+        "沿同一请求标识把 502 追到 w2 的解析失败。结合相同镜像、正常输入和 w1 对照，定位 w2 实际加载旧配置选择 v1。",
+        "说明可将同一合法输入交给两套解析配置、检查目标实例启动时生效的路径和解析版本，并从失败入口对照结果。",
+        "保留只读范围，区分已观察的记录和拟做的复验；不把计价服务、网关超时或整个发布过程判为根因。"
+      ],
+      "required_skills": [
+        "uni-debugging"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md#实现诊断审查与验证",
+      "baseline_skill": null
+    },
+    {
+      "id": "uni-debugging-discovery_positive",
+      "skill": "uni-debugging",
+      "mode": "discovery_positive",
+      "prompt": "同一批明细请求在两台实例上一个成功、一个返回 502，镜像标签相同。请从实际失败请求定位是哪一层出了问题，本次先查原因。",
+      "fixtures": {},
+      "rubric": [
+        "选用故障诊断核实错误来源。"
+      ],
+      "required_skills": [
+        "uni-debugging"
+      ],
+      "forbidden_skills": [
+        "uni-code-change",
+        "uni-code-review",
+        "uni-github-delivery-setup"
+      ],
+      "source": "evals/cases.md#实现诊断审查与验证"
+    },
+    {
+      "id": "uni-debugging-discovery_negative",
+      "skill": "uni-debugging",
+      "mode": "discovery_negative",
+      "prompt": "缺陷已经定位到唯一格式化函数，改法和影响已确认。请让数值 0 保留显示，空值继续显示横线，并更新它在两个已知调用处的用法。",
+      "fixtures": {},
+      "rubric": [
+        "在已定位和已授权的变更上选用实现入口。"
+      ],
+      "required_skills": [
+        "uni-code-change"
+      ],
+      "forbidden_skills": [
+        "uni-debugging",
+        "uni-code-review"
+      ],
+      "source": "evals/cases.md#实现诊断审查与验证"
+    },
+    {
+      "id": "uni-code-review-application",
+      "skill": "uni-code-review",
+      "mode": "application",
+      "prompt": "请审查这份 PR 的差异，指出可以落在代码行上的问题、触发条件和影响。测试与现有消费者见附件。只读评审。",
+      "fixtures": {
+        "diff.patch": "--- a/src/queue.ts\n+++ b/src/queue.ts\n@@ -14,2 +14,2 @@ export function finish(owner, id) {\n  if (owner === active()) views.showResult(id);\n- queue.remove(owner, id);\n+ queue.remove(active(), id);",
+        "contract.md": "queue 按账号分区；id 只在一个账号内唯一。切换账号不会取消已提交任务。两个不同账号可各自有 id=1 的任务。队列消费者会在下一次启动重新调度仍在队列中的任务。views 只负责当前页面展示。",
+        "tests.md": "现有测试在 A 账号创建和结束 id=1，断言视图有结果、A 队列为空。这是一份拟审查的工作区差异，未提供 CI 或设备运行记录。"
+      },
+      "rubric": [
+        "指出变更行 src/queue.ts 中清理绑定到当前账号，给出 A1 提交后切换 B1、A1 迟到结束的可达顺序和删除 B1、残留 A1 的影响。",
+        "区分已存在的界面身份检查和新引入的队列副作用。指出现有同账号用例未覆盖跨账号同编号，并提出能观察两个分区的复现或断言。",
+        "发现有改动行、契约和实际消费者作依据；保持只读，未获得的运行结果不作为证据。"
+      ],
+      "required_skills": [
+        "uni-code-review"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md#实现诊断审查与验证",
+      "baseline_skill": null
+    },
+    {
+      "id": "uni-code-review-discovery_positive",
+      "skill": "uni-code-review",
+      "mode": "discovery_positive",
+      "prompt": "这个 PR 把队列清理从任务的原账号改成当前账号。请按 diff 审查，只列有证据的问题、触发条件和影响，先不要改代码。",
+      "fixtures": {},
+      "rubric": [
+        "选用面向差异的只读代码审查。"
+      ],
+      "required_skills": [
+        "uni-code-review"
+      ],
+      "forbidden_skills": [
+        "uni-code-change",
+        "uni-debugging"
+      ],
+      "source": "evals/cases.md#实现诊断审查与验证"
+    },
+    {
+      "id": "uni-code-review-discovery_negative",
+      "skill": "uni-code-review",
+      "mode": "discovery_negative",
+      "prompt": "没有 PR 或候选变更。现有调度器昨天开始报超时，请从失败请求、运行日志和同条件对照确定原因。",
+      "fixtures": {},
+      "rubric": [
+        "选用故障诊断，排除针对候选差异的审查。"
+      ],
+      "required_skills": [
+        "uni-debugging"
+      ],
+      "forbidden_skills": [
+        "uni-code-review"
+      ],
+      "source": "evals/cases.md#实现诊断审查与验证"
+    },
+    {
+      "id": "uni-verify-change-application",
+      "skill": "uni-verify-change",
+      "mode": "application",
+      "prompt": "请根据当前 diff、接线和已有记录，列出本次还要核验哪些入口、应运行的项目命令及各自判据，说明现在能确认哪些结果。本题材料只读。",
+      "fixtures": {
+        "change.md": "基线 A 到工作区 B 只将 formatCount 的缺省判断从 !value 改成 value == null。契约要求 0 显示为“0”，null 与省略显示为“—”。实际调用方有列表行和由运行时注册表启用的导出器。两个调用方传入可空数量。",
+        "checks.md": "维护入口给出 npm run types、npm run test:counts、npm run test:list、npm run test:export。test:counts 检查 0、null 与缺省，test:list 和 test:export 分别检查界面展示与导出单元格。按静态关联自动找出的测试没有选到导出器。B 上 types 和 test:list 已通过；test:counts 和 test:export 只在 A 上运行过。服务启动、设备、打包和发布配置均未发生变化。"
+      },
+      "rubric": [
+        "复用 B 的类型与列表证据；按现有命令补 B 的格式化用例和动态注册的实际导出器，不重复无关构建发布。",
+        "给出能判定 0 与缺省或 null 的真实返回、列表与导出值的检查，不用静态关联测试或 A 的旧断言替代 B 的运行证据。",
+        "诚实区分题内已完成与拟跑项目，未实际验证的宿主、业务或部署不计为通过。"
+      ],
+      "required_skills": [
+        "uni-verify-change"
+      ],
+      "forbidden_skills": [],
+      "source": "evals/cases.md#实现诊断审查与验证",
+      "baseline_skill": null
+    },
+    {
+      "id": "uni-verify-change-discovery_positive",
+      "skill": "uni-verify-change",
+      "mode": "discovery_positive",
+      "prompt": "修改已经完成，当前 lint 通过，但静态选测可能漏掉从注册表加载的消费者。请根据工作区差异选出本次需要的检查，运行能在本机执行的部分，说明结果覆盖到哪里。",
+      "fixtures": {},
+      "rubric": [
+        "选用按差异核验变更的技能。"
+      ],
+      "required_skills": [
+        "uni-verify-change"
+      ],
+      "forbidden_skills": [
+        "uni-debugging",
+        "uni-github-delivery-setup"
+      ],
+      "source": "evals/cases.md#实现诊断审查与验证"
+    },
+    {
+      "id": "uni-verify-change-discovery_negative",
+      "skill": "uni-verify-change",
+      "mode": "discovery_negative",
+      "prompt": "导出器还没有实现，也没有变更可以运行。请从功能承诺设计第一批成功与失败用例，以及将来逐文件覆盖率的门槛。",
+      "fixtures": {},
+      "rubric": [
+        "选择新功能测试设计，排除已有变更验证。"
+      ],
+      "required_skills": [
+        "uni-test-design"
+      ],
+      "forbidden_skills": [
+        "uni-verify-change",
+        "uni-code-review"
+      ],
+      "source": "evals/cases.md#实现诊断审查与验证"
     }
   ]
 }

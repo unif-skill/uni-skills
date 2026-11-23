@@ -1,6 +1,6 @@
 interface:
-  display_name: "Uni 测试设计与覆盖率"
-  short_description: "为新功能设计验收用例，判断已有系统的覆盖缺口并核验逐文件门禁"
-  default_prompt: "使用 $uni-test-design 设计行为测试并核对覆盖率验收条件。"
+  display_name: "Uni 测试设计"
+  short_description: "为功能设计可执行用例，从公共入口验证缺陷回归并核对覆盖率门禁"
+  default_prompt: "使用 $uni-test-design 为这项功能设计验收用例，并说明如何核对覆盖范围。"
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.svg"

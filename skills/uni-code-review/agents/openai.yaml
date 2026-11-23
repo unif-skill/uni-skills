@@ -1,0 +1,6 @@
+interface:
+  display_name: "Uni 代码审查"
+  short_description: "审查 PR、提交或工作区差异，指出问题位置、触发条件和实际影响"
+  default_prompt: "使用 $uni-code-review 审查这组变更，标出可定位的问题、触发条件和后果。"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"

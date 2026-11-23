@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "uni-skills",
   "version": "0.13.4",
-  "description": "独立维护和使用的通用工程技能：第三方技术接入、代码组织、测试设计、React Native 与 HarmonyOS 开发、库工程、文档、技能编写与 GitHub 交付。",
+  "description": "可独立使用的通用工程技能，覆盖代码修改、诊断、审查、测试与验证、第三方接入、React Native 与 HarmonyOS 开发和库工程、文档、技能编写与 GitHub 交付配置。",
   "extensions": {
     "com.openai": {
       "interface": {

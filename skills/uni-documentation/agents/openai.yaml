@@ -1,6 +1,6 @@
 interface:
-  display_name: "Uni 文档规范"
-  short_description: "适用于各种工程的文档与源码注释编写、审校及文档站生成、构建与验证规范"
-  default_prompt: "使用 $uni-documentation 核对并优化这些技术文档的内容、表达和准确性。"
+  display_name: "Uni 工程文档"
+  short_description: "从读者任务出发更新文档、源码注释或文档站，核对入口和实际内容"
+  default_prompt: "使用 $uni-documentation 按读者需要更新这份工程文档，并核实其中的接口和用法。"
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.svg"

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Uni 变更验证"
+  short_description: "按实际改动选择并运行检查，说明哪些行为已验证、哪些还需确认"
+  default_prompt: "使用 $uni-verify-change 验证这次变更，并说明结果覆盖的入口和环境。"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"

@@ -1,23 +1,26 @@
 # Uni Skills
 
-通用工程技能集合，提供第三方技术接入、代码组织、测试设计、React Native 与 HarmonyOS 开发、库工程、文档规范、技能编写和 GitHub 交付工具。
+13 项可独立安装的通用工程技能，覆盖代码变更、故障诊断、代码审查、测试与验证，以及平台开发、依赖接入、文档、技能编写和 GitHub 交付配置。
 
 ## 技能
 
 | 技能 | 用途 |
 |---|---|
 | [uni-third-party-integration](skills/uni-third-party-integration/SKILL.md) | 第三方库、框架与 SDK 的设计、接入、封装、升级评估及排障 |
-| [uni-code-organization](skills/uni-code-organization/SKILL.md) | 跨语言代码开发、维护和审查中的职责、条件、类型、依赖、异步、注释及工程配置 |
+| [uni-code-change](skills/uni-code-change/SKILL.md) | 实现明确需求，重构代码、调整工程配置或清理已确认的废弃路径 |
+| [uni-debugging](skills/uni-debugging/SKILL.md) | 从实际失败入口复现故障，定位根因并验证获准的修复 |
+| [uni-code-review](skills/uni-code-review/SKILL.md) | 审查 PR、提交或工作区差异，给出可定位的触发条件、后果和依据 |
+| [uni-verify-change](skills/uni-verify-change/SKILL.md) | 按实际差异和消费者选择并运行检查，说明结果及未覆盖范围 |
 | [uni-test-design](skills/uni-test-design/SKILL.md) | 新功能的行为测试、已有系统的回归与覆盖率门禁 |
 | [uni-rn-dev](skills/uni-rn-dev/SKILL.md) | RN 组件、Hook、样式、平台接入与 iOS 安装调试 |
 | [uni-rn-library](skills/uni-rn-library/SKILL.md) | RN 库创建、提取、维护、打包、发布与运行示例 |
 | [uni-harmony-dev](skills/uni-harmony-dev/SKILL.md) | API 26／V2 下的 ArkTS／ArkUI 状态、宿主生命周期、平台接入与资源交接 |
 | [uni-harmony-library](skills/uni-harmony-library/SKILL.md) | API 26 原生 HAR 库公共入口、依赖资源、打包发布与真实宿主示例 |
-| [uni-github-delivery](skills/uni-github-delivery/SKILL.md) | GitHub CI、仓库保护、工程模板同步、发布与恢复检查 |
+| [uni-github-delivery-setup](skills/uni-github-delivery-setup/SKILL.md) | 建设或核查 GitHub CI、规则集、仓库保护、模板同步及发布恢复配置 |
 | [uni-documentation](skills/uni-documentation/SKILL.md) | 各类工程的文档编写、组织与审校，以及文档站生成、构建和验证 |
 | [uni-skill-authoring](skills/uni-skill-authoring/SKILL.md) | 技能内容编写与审校、适用范围、触发描述和配套资料维护 |
 
-技能按实际任务独立发现和使用，不要求相互安装或调用。GitHub 交付的共用机制在 uni-github-delivery 维护；组织约定由所属组织提供，接入时落实到目标工程配置，通用工具不查找其他技能的安装目录。
+技能按实际任务独立发现和使用，不要求相互安装或调用。GitHub 交付的共用机制在 uni-github-delivery-setup 维护；组织约定由所属组织提供，接入时落实到目标工程配置，通用工具不查找其他技能的安装目录。
 
 这些规范适用于不同企业和项目。具体技术选型、业务目录、CI、发布方式和能力契约从目标项目取得；文档规范适用于 RN、鸿蒙、脚本及其他技术工程。
 
@@ -52,12 +55,24 @@ npx skills add unif-skill/uni-skills -g \
 更新本集合的技能：
 
 ```sh
-npx skills update -g uni-code-organization uni-test-design uni-rn-dev \
+npx skills update -g uni-code-change uni-debugging uni-code-review \
+  uni-verify-change uni-test-design uni-rn-dev \
   uni-rn-library uni-harmony-dev uni-harmony-library \
-  uni-documentation uni-skill-authoring uni-github-delivery uni-third-party-integration
+  uni-documentation uni-skill-authoring uni-github-delivery-setup uni-third-party-integration
 ```
 
-此命令更新已安装的共享副本；首次添加新技能时重新执行上方安装命令。Codex 插件按插件机制单独更新，不会自动改写共享目录。两种入口并存时分别更新并核对同一版本的内容，继续禁用 Codex 的重复共享入口。安装或更新后，在目标工具中确认技能可见；旧会话仍使用缓存时，重新打开会话。
+此命令更新已安装的共享技能。使用早期版本共享入口的工程按以下顺序处理。
+
+1. 按原安装范围与工具执行上方 `skills add`，安装本次需要的新入口。在实际使用的工具中核对所选技能可见。
+2. 查安装记录，确认以下旧入口来自本集合，然后按原范围与工具移除。下例对应全局安装到 Codex、Claude Code 和 Cursor。项目级安装在对应工程内执行，省略 `-g`，并按原安装情况调整 `--agent` 名单。
+
+   ```sh
+   npx skills remove uni-code-organization uni-github-delivery -g --agent codex claude-code cursor
+   ```
+
+3. 在目标工具核对最终可用的入口，旧会话仍使用缓存时重新打开。命令只指定这两个已经确认来源的名称。若同名技能来自其他来源，保留其安装。[Vercel Skills 移除命令](https://github.com/vercel-labs/skills/blob/main/src/remove.ts)
+
+整插件安装通过 Codex 插件入口更新。共享安装和插件并存时分别更新，继续禁用 Codex 的重复共享入口。
 
 ## 维护
 
@@ -74,7 +89,7 @@ python3.12 -m venv .venv
 .venv/bin/python -m scripts.validate_repository
 ```
 
-上述命令显式使用工程环境，不依赖系统 `python3` 指向的版本。配置测试使用合成配置，不读取真实凭据。仓库校验覆盖插件清单、版本、技能格式、YAML、本地链接与锚点、已声明资产和已采用发布工具；图标与配套资料目录按技能需要配置。交付工具的完整检查继续运行 `bash skills/uni-github-delivery/scripts/validate.sh`。
+上述命令显式使用工程环境，不依赖系统 `python3` 指向的版本。配置测试使用合成配置，不读取真实凭据。仓库校验覆盖插件清单、版本、技能格式、YAML、本地链接与锚点、已声明资产和已采用发布工具；图标与配套资料目录按技能需要配置。交付工具的完整检查继续运行 `bash skills/uni-github-delivery-setup/scripts/validate.sh`。
 
 通用技能文件校验在 `scripts/skill_validation.py` 维护。Unif 通过显式同步采用模块、测试、依赖清单和类型声明；运行时只使用仓内副本，组织与生成资料检查仍由 Unif 自身维护：
 
@@ -99,20 +114,26 @@ RN 默认开发检查及配置模板以 `uni-rn-dev/references/quality.md` 和 `
 
 `evals/joint-discovery/` 维护 Uni 与 Unif 同时可用时的专项发现题库和冻结目录。目录包含两个包的全部技能名称与触发描述，题目检查应组合使用的技能及应排除的误选，不将两层设为互斥选择。该评测独立于现有单包题库。
 
+[候选联合题目](evals/joint-discovery/cases.next.json)覆盖当前两仓的任务入口。正式评测仍采用同批冻结的 `catalog.json` 和 `cases.json`。取得两仓来源提交后，用 `freeze --catalog` 将新目录写至临时文件，通过 `validate --catalog <新目录> --suite evals/joint-discovery/cases.next.json` 核对，再一并替换正式目录和题目，同步到 Unif。
+
 离线校验只读取仓内冻结资料，不需要安装 Unif、访问其他私有仓或调用模型：
 
 ```sh
 .venv/bin/python -m scripts.joint_discovery_eval validate
 ```
 
-目录更新由维护者显式提供两仓路径和完整提交 SHA，生成后核对来源。以下占位值须替换为实际路径与修订：
+核对候选目录时提供两仓路径和完整提交 SHA。将以下示例路径和修订替换为实际值，三条命令共用同一个仓外目录文件。
 
 ```sh
 .venv/bin/python -m scripts.joint_discovery_eval freeze \
+  --catalog /tmp/uni-unif-candidate-catalog.json \
   --uni-repo /path/to/uni-skills --uni-ref UNI_COMMIT_SHA \
   --unif-repo /path/to/unif-portal-dev-skills --unif-ref UNIF_COMMIT_SHA
 .venv/bin/python -m scripts.joint_discovery_eval verify-sources \
+  --catalog /tmp/uni-unif-candidate-catalog.json \
   --uni-repo /path/to/uni-skills --unif-repo /path/to/unif-portal-dev-skills
+.venv/bin/python -m scripts.joint_discovery_eval validate \
+  --catalog /tmp/uni-unif-candidate-catalog.json --suite evals/joint-discovery/cases.next.json
 ```
 
 真实模型运行使用[行为评测配置](evals/behavior/README.md)，显式启用并配置模型、服务地址、凭据和请求预算，每次使用新的仓库外输出目录：

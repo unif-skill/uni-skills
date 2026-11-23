@@ -1,6 +1,6 @@
 interface:
-  display_name: "Uni 鸿蒙库工程"
-  short_description: "按 API 26 维护 HAR 库的公共入口、依赖资源、打包发布与宿主消费"
-  default_prompt: "使用 $uni-harmony-library 按 API 26 与本项目标准完成这项原生鸿蒙 HAR 库工程任务。"
+  display_name: "Uni HarmonyOS HAR 库工程"
+  short_description: "核对 HAR 的公开入口、依赖、资源与示例，从独立原生宿主验证产物"
+  default_prompt: "使用 $uni-harmony-library 完成这个 HAR 库工程任务，并说明目标宿主如何消费产物。"
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.svg"

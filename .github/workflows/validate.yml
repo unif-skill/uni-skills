@@ -52,7 +52,7 @@ jobs:
       - name: Verify RN rules and real commit hooks
         run: node --test tests/rn-quality.test.cjs
       - name: Validate delivery implementation
-        run: bash skills/uni-github-delivery/scripts/validate.sh
+        run: bash skills/uni-github-delivery-setup/scripts/validate.sh
 
   release:
     name: Release skills

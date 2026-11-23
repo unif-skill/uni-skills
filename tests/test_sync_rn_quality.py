@@ -6,52 +6,54 @@ from scripts.sync_rn_quality import sync_quality
 
 
 class QualityDistributionTests(unittest.TestCase):
-    def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
-        source = self.root / 'skills/uni-rn-dev'
+    def prepare_root(self) -> Path:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        source = root / 'skills/uni-rn-dev'
         (source / 'references').mkdir(parents=True)
-        (source / 'references/quality.md').write_text('# Quality\n')
+        _ = (source / 'references/quality.md').write_text('# Quality\n')
         (source / 'templates/quality/.husky').mkdir(parents=True)
-        (source / 'templates/quality/eslint.config.cjs').write_text('module.exports = [];\n')
-        (source / 'templates/quality/.husky/pre-commit').write_text('npm run lint:staged\n')
+        _ = (source / 'templates/quality/eslint.config.cjs').write_text('module.exports = [];\n')
+        _ = (source / 'templates/quality/.husky/pre-commit').write_text('npm run lint:staged\n')
+        return root
 
-    def test_copies_are_self_contained_and_check_does_not_write(self):
+    def test_copies_are_self_contained_and_check_does_not_write(self) -> None:
+        root = self.prepare_root()
         with self.assertRaises(ValueError):
-            sync_quality(self.root, check=True)
-        sync_quality(self.root)
-        for skill in ['uni-github-delivery', 'uni-rn-library']:
-            target = self.root / 'skills' / skill
+            _ = sync_quality(root, check=True)
+        _ = sync_quality(root)
+        for skill in ['uni-github-delivery-setup', 'uni-rn-library']:
+            target = root / 'skills' / skill
             self.assertEqual((target / 'templates/quality/.husky/pre-commit').read_text(), 'npm run lint:staged\n')
-            (target / 'SKILL.md').write_text('Project entry\n')
-        before = {str(p): p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
-        sync_quality(self.root, check=True)
-        self.assertEqual(before, {str(p): p.read_bytes() for p in self.root.rglob('*') if p.is_file()})
+            _ = (target / 'SKILL.md').write_text('Project entry\n')
+        before = {str(p): p.read_bytes() for p in root.rglob('*') if p.is_file()}
+        _ = sync_quality(root, check=True)
+        self.assertEqual(before, {str(p): p.read_bytes() for p in root.rglob('*') if p.is_file()})
 
-    def test_changed_or_missing_asset_fails_until_synced(self):
-        sync_quality(self.root)
-        target = self.root / 'skills/uni-github-delivery/templates/quality/eslint.config.cjs'
-        target.write_text('changed\n')
+    def test_changed_or_missing_asset_fails_until_synced(self) -> None:
+        root = self.prepare_root()
+        _ = sync_quality(root)
+        target = root / 'skills/uni-github-delivery-setup/templates/quality/eslint.config.cjs'
+        _ = target.write_text('changed\n')
         with self.assertRaisesRegex(ValueError, 'eslint.config.cjs'):
-            sync_quality(self.root, check=True)
+            _ = sync_quality(root, check=True)
         self.assertEqual(target.read_text(), 'changed\n')
-        sync_quality(self.root)
-        sync_quality(self.root, check=True)
+        _ = sync_quality(root)
+        _ = sync_quality(root, check=True)
         target.unlink()
         with self.assertRaises(ValueError):
-            sync_quality(self.root, check=True)
+            _ = sync_quality(root, check=True)
 
-    def test_symlink_cannot_redirect_generated_output(self):
-        target = self.root / 'skills/uni-github-delivery'
+    def test_symlink_cannot_redirect_generated_output(self) -> None:
+        root = self.prepare_root()
+        target = root / 'skills/uni-github-delivery-setup'
         target.mkdir(parents=True)
-        outside = self.root / 'outside'
+        outside = root / 'outside'
         outside.mkdir()
         (target / 'templates').symlink_to(outside, target_is_directory=True)
         with self.assertRaises(ValueError):
-            sync_quality(self.root)
+            _ = sync_quality(root)
         self.assertEqual(list(outside.iterdir()), [])
 
 
 if __name__ == '__main__':
-    unittest.main()
+    _ = unittest.main()
