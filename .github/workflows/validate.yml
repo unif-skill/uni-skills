@@ -36,6 +36,8 @@ jobs:
           echo "$GITHUB_WORKSPACE" >> "$GITHUB_PATH"
       - name: Test repository maintenance tools
         run: python3 -m unittest discover -s tests -v
+      - name: Compare package discovery entries with the frozen catalog
+        run: python -m scripts.joint_discovery_eval compare-package --ci
       - name: Validate plugin and adopted release tools
         env:
           RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}

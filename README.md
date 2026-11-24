@@ -72,7 +72,7 @@ npx skills update -g uni-code-change uni-debugging uni-code-review \
 
 3. 在目标工具核对最终可用的入口，旧会话仍使用缓存时重新打开。命令只指定这两个已经确认来源的名称。若同名技能来自其他来源，保留其安装。[Vercel Skills 移除命令](https://github.com/vercel-labs/skills/blob/main/src/remove.ts)
 
-整插件安装通过 Codex 插件入口更新。共享安装和插件并存时分别更新，继续禁用 Codex 的重复共享入口。
+整插件安装通过 Codex 插件入口更新。安装或更新后，在新 Codex 会话核对已启用技能的实际来源路径和插件版本。使用共享安装的 Claude Code 核对 `~/.claude/skills/<技能名>` 实际指向的目录。将各自加载目录中的 `SKILL.md`、展示配置及所需引用、脚本和资产逐项与目标修订对照，完整目录可用 `diff -qr` 比较。两种安装并存时分别更新，在 Codex 只启用一个同名入口。
 
 ## 维护
 
@@ -118,6 +118,15 @@ RN 默认开发检查及配置模板以 `uni-rn-dev/references/quality.md` 和 `
 
 ```sh
 .venv/bin/python -m scripts.joint_discovery_eval validate
+```
+
+常规 CI 另用 `compare-package --ci` 比较本仓检出提交和冻结目录中本包的技能名称、描述。新增、删除或描述变动会出现在警告和 job 摘要中，历史目录仍可按冻结来源使用。只改版本、技能正文或配套文件时，发现输入仍可相同。
+
+要把历史发现结果用于指定的发布组合，在 Uni 仓对两个实际发布提交分别运行以下命令。退出码 0 表示该包名称和描述一致，1 表示有差异，2 表示无法完成检查。两端均一致后，还要核对原题库、评测工具、模型版本和运行设置是否适用于这次比较。只有一方变化时，另一方可保留已核实的条目一致性和有独立证据的单包结果，联合分数仍归原组合。引用结果时保留原报告的样本数、结论及局限。正文应用和宿主实际加载另行核验。
+
+```sh
+.venv/bin/python -m scripts.joint_discovery_eval compare-package --repo /path/to/uni-skills --ref UNI_COMMIT_SHA
+.venv/bin/python -m scripts.joint_discovery_eval compare-package --repo /path/to/unif-portal-dev-skills --ref UNIF_COMMIT_SHA
 ```
 
 更新冻结目录时，先从两个完整提交生成仓外候选文件，再核对来源和配套题目。以下命令使用现行题库。题目也有改动时，将最后一条命令的 `--suite` 指向候选题库。两项校验都通过后，再将核实过的目录和题目一起更新到正式位置，并运行 `scripts/sync_evaluation_tools.py` 同步到 Unif。
